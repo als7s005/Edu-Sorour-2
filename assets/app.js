@@ -15,6 +15,8 @@ let currentUser = null;
 let currentProfile = null;
 let page = "dashboard";
 
+let groupsCache = [];
+
 const titles = {
   dashboard: ["لوحة التحكم", "نظرة سريعة على النظام"],
   students: ["الطلاب", "إدارة بيانات الطلاب والحسابات"],
@@ -73,6 +75,7 @@ const navByRole = {
 async function boot() {
 
   if (!sb) {
+
     showLogin();
 
     setLoginMessage(
@@ -128,8 +131,11 @@ async function boot() {
 async function loadProfile() {
 
   if (!currentUser) {
+
     showLogin();
+
     return;
+
   }
 
   const {
@@ -148,7 +154,7 @@ async function loadProfile() {
     showLogin();
 
     setLoginMessage(
-      "لم يتم العثور على ملف الحساب. تأكد من إنشاء profile لهذا المستخدم."
+      "لم يتم العثور على ملف الحساب."
     );
 
     return;
@@ -157,6 +163,8 @@ async function loadProfile() {
   currentProfile = data;
 
   showApp();
+
+  await loadGroups();
 
   render();
 }
@@ -170,11 +178,11 @@ function showLogin() {
 
   document
     .getElementById("loginView")
-    .classList.remove("hidden");
+    ?.classList.remove("hidden");
 
   document
     .getElementById("app")
-    .classList.add("hidden");
+    ?.classList.add("hidden");
 }
 
 
@@ -186,26 +194,41 @@ function showApp() {
 
   document
     .getElementById("loginView")
-    .classList.add("hidden");
+    ?.classList.add("hidden");
 
   document
     .getElementById("app")
-    .classList.remove("hidden");
+    ?.classList.remove("hidden");
 
   const name =
-    currentProfile.full_name || "مستخدم";
+    currentProfile?.full_name || "مستخدم";
 
-  document.getElementById("userName").textContent =
-    name;
+  const userName =
+    document.getElementById("userName");
 
-  document.getElementById("roleLabel").textContent =
-    roleArabic(currentProfile.role);
+  const roleLabel =
+    document.getElementById("roleLabel");
 
-  document.getElementById("userMeta").textContent =
-    currentProfile.role;
+  const userMeta =
+    document.getElementById("userMeta");
 
-  document.getElementById("avatar").textContent =
-    name[0] || "م";
+  const avatar =
+    document.getElementById("avatar");
+
+  if (userName)
+    userName.textContent = name;
+
+  if (roleLabel)
+    roleLabel.textContent =
+      roleArabic(currentProfile.role);
+
+  if (userMeta)
+    userMeta.textContent =
+      currentProfile.role;
+
+  if (avatar)
+    avatar.textContent =
+      name[0] || "م";
 }
 
 
@@ -234,9 +257,59 @@ function setLoginMessage(message) {
     document.getElementById("loginMsg");
 
   if (el) {
+
     el.textContent = message;
+
   }
 
+}
+
+
+// =====================================================
+// تحميل المجموعات
+// =====================================================
+
+async function loadGroups() {
+
+  if (!sb) return;
+
+  const {
+    data,
+    error
+  } = await sb
+    .from("groups")
+    .select("*")
+    .order("name");
+
+  if (error) {
+
+    console.error("GROUPS ERROR:", error);
+
+    groupsCache = [];
+
+    return;
+
+  }
+
+  groupsCache = data || [];
+
+}
+
+
+// =====================================================
+// اسم المجموعة
+// =====================================================
+
+function groupName(id) {
+
+  if (!id) return "—";
+
+  const group =
+    groupsCache.find(
+      g => String(g.id) === String(id)
+    );
+
+  return group?.name || "—";
 }
 
 
@@ -246,7 +319,7 @@ function setLoginMessage(message) {
 
 document
   .getElementById("loginForm")
-  .addEventListener(
+  ?.addEventListener(
     "submit",
     async (e) => {
 
@@ -274,7 +347,6 @@ document
 
       let email = id;
 
-      // إذا كان المستخدم طالبًا وكتب ID
       const {
         data: studentData
       } = await sb
@@ -323,15 +395,18 @@ document
 
 document
   .getElementById("logout")
-  .onclick = async () => {
+  ?.addEventListener(
+    "click",
+    async () => {
 
-    if (sb) {
+      if (sb) {
 
-      await sb.auth.signOut();
+        await sb.auth.signOut();
+
+      }
 
     }
-
-  };
+  );
 
 
 // =====================================================
@@ -352,6 +427,8 @@ function render() {
 
   const nav =
     document.getElementById("nav");
+
+  if (!nav) return;
 
   nav.innerHTML =
     (navByRole[currentProfile.role] || [])
@@ -385,12 +462,26 @@ function render() {
   const content =
     document.getElementById("content");
 
+  if (!content) return;
+
   content.innerHTML =
     pageHTML(page);
 
   if (page === "students") {
 
     loadStudents();
+
+  }
+
+  if (page === "groups") {
+
+    loadGroupsPage();
+
+  }
+
+  if (page === "reports") {
+
+    loadReports();
 
   }
 
@@ -403,12 +494,9 @@ function render() {
 
 function pageHTML(p) {
 
-  if (p === "dashboard") {
-
-    return dashboardHTML();
-
-  }
-
+  // ==============================
+  // الطلاب
+  // ==============================
 
   if (p === "students") {
 
@@ -460,6 +548,7 @@ function pageHTML(p) {
                 <th>ID</th>
                 <th>الصف</th>
                 <th>المجموعة</th>
+                <th>حصة الحل</th>
                 <th>الحضور</th>
                 <th>النقاط</th>
                 <th></th>
@@ -471,7 +560,7 @@ function pageHTML(p) {
 
               <tr>
                 <td
-                  colspan="7"
+                  colspan="8"
                   class="empty"
                 >
                   جاري التحميل...
@@ -489,6 +578,10 @@ function pageHTML(p) {
 
   }
 
+
+  // ==============================
+  // المعلمين
+  // ==============================
 
   if (p === "teachers") {
 
@@ -521,6 +614,10 @@ function pageHTML(p) {
   }
 
 
+  // ==============================
+  // المجموعات
+  // ==============================
+
   if (p === "groups") {
 
     return `
@@ -552,6 +649,10 @@ function pageHTML(p) {
   }
 
 
+  // ==============================
+  // الحضور
+  // ==============================
+
   if (p === "attendance") {
 
     return `
@@ -571,9 +672,7 @@ function pageHTML(p) {
         </div>
 
         <div class="notice">
-
           تسجيل ومتابعة حضور الطلاب.
-
         </div>
 
         <div
@@ -588,6 +687,10 @@ function pageHTML(p) {
 
   }
 
+
+  // ==============================
+  // الامتحانات
+  // ==============================
 
   if (p === "exams") {
 
@@ -619,6 +722,10 @@ function pageHTML(p) {
 
   }
 
+
+  // ==============================
+  // المحادثات
+  // ==============================
 
   if (p === "messages") {
 
@@ -657,6 +764,10 @@ function pageHTML(p) {
   }
 
 
+  // ==============================
+  // الإشعارات
+  // ==============================
+
   if (p === "notifications") {
 
     return `
@@ -670,6 +781,7 @@ function pageHTML(p) {
         >
 
           <label>
+
             المستلم
 
             <select id="notifyTo">
@@ -706,9 +818,7 @@ function pageHTML(p) {
           </label>
 
           <button class="btn">
-
             إرسال
-
           </button>
 
         </form>
@@ -718,6 +828,10 @@ function pageHTML(p) {
 
   }
 
+
+  // ==============================
+  // التقارير
+  // ==============================
 
   if (p === "reports") {
 
@@ -756,29 +870,57 @@ function pageHTML(p) {
 
         <div class="card">
           <span class="kpi">
-            تقييم الشهر
+            طلبات نقل المجموعات
           </span>
 
-          <strong id="rMonth">
+          <strong id="rTransfers">
             —
           </strong>
         </div>
 
       </div>
 
+      ${
+        currentProfile.role === "admin"
+          ? `
+            <div class="card">
+
+              <div class="section-head">
+
+                <h2>
+                  طلبات نقل المجموعات
+                </h2>
+
+              </div>
+
+              <div id="transferRequests">
+                جاري التحميل...
+              </div>
+
+            </div>
+          `
+          : ""
+      }
+
       <div class="card">
 
-        <h2>نظام النقاط</h2>
+        <h2>
+          سجل تغيير المجموعات
+        </h2>
 
-        <p>
-          النقاط مبنية على الحضور والامتحانات والتقييم الشهري.
-        </p>
+        <div id="transferHistory">
+          جاري التحميل...
+        </div>
 
       </div>
     `;
 
   }
 
+
+  // ==============================
+  // الإعدادات
+  // ==============================
 
   if (p === "settings") {
 
@@ -825,6 +967,20 @@ function pageHTML(p) {
             </button>
 
           </form>
+
+          ${
+            currentProfile.role === "student"
+              ? `
+                <button
+                  class="btn secondary"
+                  style="margin-top:10px"
+                  onclick="requestGroupTransfer()"
+                >
+                  طلب تغيير المجموعة
+                </button>
+              `
+              : ""
+          }
 
           <button
             class="btn secondary"
@@ -875,7 +1031,6 @@ function dashboardHTML() {
 
       </div>
 
-
       <div class="card stat">
 
         <div>
@@ -896,7 +1051,6 @@ function dashboardHTML() {
 
       </div>
 
-
       <div class="card stat">
 
         <div>
@@ -916,7 +1070,6 @@ function dashboardHTML() {
         </div>
 
       </div>
-
 
       <div class="card stat">
 
@@ -939,7 +1092,6 @@ function dashboardHTML() {
       </div>
 
     </div>
-
 
     <div class="card">
 
@@ -973,11 +1125,8 @@ async function loadStudents() {
 
   if (!sb) return;
 
-  const {
-    data,
-    error
-  } =
-    await sb
+  let query =
+    sb
       .from("students")
       .select(
         "*,groups(name),profiles(full_name)"
@@ -988,6 +1137,11 @@ async function loadStudents() {
           ascending: false
         }
       );
+
+  const {
+    data,
+    error
+  } = await query;
 
   const body =
     document.getElementById("studentBody");
@@ -1001,7 +1155,7 @@ async function loadStudents() {
     body.innerHTML = `
       <tr>
         <td
-          colspan="7"
+          colspan="8"
           class="error"
         >
           خطأ: ${esc(error.message)}
@@ -1066,6 +1220,12 @@ async function loadStudents() {
             </td>
 
             <td>
+              ${esc(
+                groupName(student.solution_group_id)
+              )}
+            </td>
+
+            <td>
               ${student.attendance_percent ?? 0}%
             </td>
 
@@ -1086,6 +1246,19 @@ async function loadStudents() {
                 PDF
               </button>
 
+              ${
+                currentProfile.role === "admin"
+                  ? `
+                    <button
+                      class="btn secondary"
+                      onclick='editStudentGroups(${JSON.stringify(student)})'
+                    >
+                      المجموعات
+                    </button>
+                  `
+                  : ""
+              }
+
             </td>
 
           </tr>
@@ -1097,14 +1270,13 @@ async function loadStudents() {
       `
         <tr>
           <td
-            colspan="7"
+            colspan="8"
             class="empty"
           >
             لا توجد بيانات
           </td>
         </tr>
       `;
-
 
   const input =
     document.getElementById(
@@ -1146,6 +1318,20 @@ async function loadStudents() {
 
 function addStudent() {
 
+  const normalGroups =
+    groupsCache
+      .filter(
+        g =>
+          g.type !== "solution"
+      );
+
+  const solutionGroups =
+    groupsCache
+      .filter(
+        g =>
+          g.type === "solution"
+      );
+
   openModal(`
 
     <h2>
@@ -1170,7 +1356,6 @@ function addStudent() {
 
         </label>
 
-
         <label>
 
           الهاتف
@@ -1183,17 +1368,16 @@ function addStudent() {
 
         </label>
 
-
         <label>
 
           هاتف ولي الأمر
 
           <input
             id="sparent"
+            placeholder="رقم ولي الأمر"
           >
 
         </label>
-
 
         <label>
 
@@ -1220,18 +1404,63 @@ function addStudent() {
 
         </label>
 
-
         <label>
 
           المجموعة
 
-          <input
+          <select
             id="sgrp"
-            placeholder="اتركها فارغة حاليًا"
+            required
           >
+
+            <option value="">
+              اختر المجموعة
+            </option>
+
+            ${
+              normalGroups
+                .map(
+                  g => `
+                    <option value="${esc(g.id)}">
+                      ${esc(g.name)}
+                    </option>
+                  `
+                )
+                .join("")
+            }
+
+          </select>
 
         </label>
 
+        <label>
+
+          حصة الحل
+
+          <select
+            id="solutionGroup"
+            required
+          >
+
+            <option value="">
+              اختر حصة الحل
+            </option>
+
+            ${
+              solutionGroups
+                .map(
+                  g => `
+                    <option value="${esc(g.id)}">
+                      ${esc(g.name)}
+                    </option>
+                  `
+                )
+                .join("")
+            }
+
+          </select>
+
+        </label>
 
         <label>
 
@@ -1245,10 +1474,13 @@ function addStudent() {
 
       </div>
 
-
       <div class="notice">
 
-        سيتم إنشاء ID الطالب تلقائيًا.
+        <strong>
+          مهم:
+        </strong>
+
+        المجموعة وحصة الحل إجباريتان.
 
         <br>
 
@@ -1256,7 +1488,6 @@ function addStudent() {
         آخر 6 أرقام من هاتف الطالب.
 
       </div>
-
 
       <button
         class="btn"
@@ -1275,7 +1506,7 @@ function addStudent() {
 
 
 // =====================================================
-// إنشاء الطالب عن طريق Edge Function
+// إنشاء الطالب
 // =====================================================
 
 async function createStudent(e) {
@@ -1291,7 +1522,6 @@ async function createStudent(e) {
     return;
 
   }
-
 
   const fullName =
     document
@@ -1319,8 +1549,12 @@ async function createStudent(e) {
   const groupId =
     document
       .getElementById("sgrp")
-      .value
-      .trim();
+      .value;
+
+  const solutionGroupId =
+    document
+      .getElementById("solutionGroup")
+      .value;
 
   const seatNumber =
     document
@@ -1328,39 +1562,49 @@ async function createStudent(e) {
       .value
       .trim();
 
-
   if (!fullName) {
 
-    alert(
-      "اكتب اسم الطالب."
-    );
+    alert("اكتب اسم الطالب.");
 
     return;
 
   }
-
 
   if (!phone) {
 
-    alert(
-      "اكتب رقم هاتف الطالب."
-    );
+    alert("اكتب رقم هاتف الطالب.");
 
     return;
 
   }
-
 
   if (!grade) {
 
+    alert("اختر الصف.");
+
+    return;
+
+  }
+
+  if (!groupId) {
+
     alert(
-      "اختر الصف."
+      "لا يمكن إنشاء الطالب بدون اختيار المجموعة."
     );
 
     return;
 
   }
 
+  if (!solutionGroupId) {
+
+    alert(
+      "لا يمكن إنشاء الطالب بدون اختيار حصة الحل."
+    );
+
+    return;
+
+  }
 
   const {
     data: sessionData,
@@ -1368,20 +1612,18 @@ async function createStudent(e) {
   } =
     await sb.auth.getSession();
 
-
   if (
     sessionError ||
     !sessionData.session
   ) {
 
     alert(
-      "انتهت جلسة تسجيل الدخول. سجل الدخول مرة أخرى."
+      "انتهت جلسة تسجيل الدخول."
     );
 
     return;
 
   }
-
 
   const form =
     e.target;
@@ -1391,12 +1633,10 @@ async function createStudent(e) {
       'button[type="submit"]'
     );
 
-
   const oldText =
     button
       ? button.textContent
       : "";
-
 
   if (button) {
 
@@ -1406,7 +1646,6 @@ async function createStudent(e) {
       "جاري إنشاء الطالب...";
 
   }
-
 
   try {
 
@@ -1443,9 +1682,11 @@ async function createStudent(e) {
             grade:
               grade,
 
-            // نترك المجموعة فارغة في أول اختبار
             group_id:
-              null,
+              groupId,
+
+            solution_group_id:
+              solutionGroupId,
 
             seat_number:
               seatNumber
@@ -1455,10 +1696,8 @@ async function createStudent(e) {
         }
       );
 
-
     const result =
       await response.json();
-
 
     if (
       !response.ok ||
@@ -1472,13 +1711,10 @@ async function createStudent(e) {
 
     }
 
-
     const student =
       result.student;
 
-
     closeModal();
-
 
     openModal(`
 
@@ -1494,39 +1730,31 @@ async function createStudent(e) {
         >
 
           <p>
-
-            <strong>
-              اسم الطالب:
-            </strong>
-
+            <strong>اسم الطالب:</strong>
             ${esc(student.name)}
-
           </p>
 
-
           <p>
-
-            <strong>
-              ID الطالب:
-            </strong>
-
+            <strong>ID الطالب:</strong>
             ${esc(student.student_id)}
-
           </p>
 
+          <p>
+            <strong>المجموعة:</strong>
+            ${esc(groupName(student.group_id))}
+          </p>
 
           <p>
+            <strong>حصة الحل:</strong>
+            ${esc(groupName(student.solution_group_id))}
+          </p>
 
-            <strong>
-              كلمة المرور:
-            </strong>
-
+          <p>
+            <strong>كلمة المرور:</strong>
             ${esc(student.password)}
-
           </p>
 
         </div>
-
 
         <p
           style="
@@ -1534,29 +1762,21 @@ async function createStudent(e) {
             font-size:13px
           "
         >
-
-          احتفظ بالـID وكلمة المرور
-          لإعطائهما للطالب.
-
+          احتفظ بالـID وكلمة المرور لإعطائهما للطالب.
         </p>
-
 
         <button
           class="btn"
           onclick="closeModal();loadStudents()"
         >
-
           تم
-
         </button>
 
       </div>
 
     `);
 
-
     await loadStudents();
-
 
   } catch (error) {
 
@@ -1566,7 +1786,6 @@ async function createStudent(e) {
       error.message ||
       "حدث خطأ أثناء إنشاء الطالب."
     );
-
 
   } finally {
 
@@ -1585,12 +1804,1097 @@ async function createStudent(e) {
 
 
 // =====================================================
+// تعديل مجموعات الطالب للمدير
+// =====================================================
+
+function editStudentGroups(student) {
+
+  const normalGroups =
+    groupsCache
+      .filter(
+        g =>
+          g.type !== "solution"
+      );
+
+  const solutionGroups =
+    groupsCache
+      .filter(
+        g =>
+          g.type === "solution"
+      );
+
+  openModal(`
+
+    <h2>
+      تعديل مجموعات الطالب
+    </h2>
+
+    <p>
+      ${esc(student.full_name)}
+    </p>
+
+    <form
+      class="form"
+      onsubmit="saveStudentGroups(event, '${esc(student.id)}')"
+    >
+
+      <label>
+
+        المجموعة
+
+        <select
+          id="editGroup"
+          required
+        >
+
+          <option value="">
+            اختر المجموعة
+          </option>
+
+          ${
+            normalGroups
+              .map(
+                g => `
+                  <option
+                    value="${esc(g.id)}"
+                    ${
+                      String(g.id) ===
+                      String(student.group_id)
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    ${esc(g.name)}
+                  </option>
+                `
+              )
+              .join("")
+          }
+
+        </select>
+
+      </label>
+
+      <label>
+
+        حصة الحل
+
+        <select
+          id="editSolutionGroup"
+          required
+        >
+
+          <option value="">
+            اختر حصة الحل
+          </option>
+
+          ${
+            solutionGroups
+              .map(
+                g => `
+                  <option
+                    value="${esc(g.id)}"
+                    ${
+                      String(g.id) ===
+                      String(student.solution_group_id)
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    ${esc(g.name)}
+                  </option>
+                `
+              )
+              .join("")
+          }
+
+        </select>
+
+      </label>
+
+      <button
+        class="btn"
+        type="submit"
+      >
+        حفظ
+      </button>
+
+    </form>
+
+  `);
+
+}
+
+
+// =====================================================
+// حفظ مجموعات الطالب
+// =====================================================
+
+async function saveStudentGroups(
+  e,
+  studentId
+) {
+
+  e.preventDefault();
+
+  const groupId =
+    document
+      .getElementById("editGroup")
+      .value;
+
+  const solutionGroupId =
+    document
+      .getElementById("editSolutionGroup")
+      .value;
+
+  if (!groupId || !solutionGroupId) {
+
+    alert(
+      "المجموعة وحصة الحل إجباريتان."
+    );
+
+    return;
+
+  }
+
+  const {
+    data: student
+  } =
+    await sb
+      .from("students")
+      .select("*")
+      .eq("id", studentId)
+      .single();
+
+  if (!student) {
+
+    alert("لم يتم العثور على الطالب.");
+
+    return;
+
+  }
+
+  const oldGroup =
+    student.group_id;
+
+  const oldSolutionGroup =
+    student.solution_group_id;
+
+  const {
+    error
+  } =
+    await sb
+      .from("students")
+      .update({
+
+        group_id:
+          groupId,
+
+        solution_group_id:
+          solutionGroupId
+
+      })
+      .eq(
+        "id",
+        studentId
+      );
+
+  if (error) {
+
+    alert(error.message);
+
+    return;
+
+  }
+
+  if (
+    String(oldGroup) !== String(groupId)
+  ) {
+
+    await addTransferHistory(
+      studentId,
+      oldGroup,
+      groupId,
+      "تم تغيير المجموعة بواسطة المدير"
+    );
+
+  }
+
+  if (
+    String(oldSolutionGroup) !==
+    String(solutionGroupId)
+  ) {
+
+    await addTransferHistory(
+      studentId,
+      oldSolutionGroup,
+      solutionGroupId,
+      "تم تغيير حصة الحل بواسطة المدير"
+    );
+
+  }
+
+  closeModal();
+
+  alert("تم تحديث مجموعات الطالب.");
+
+  await loadStudents();
+
+}
+
+
+// =====================================================
+// طلب نقل المجموعة للطالب
+// =====================================================
+
+function requestGroupTransfer() {
+
+  const availableGroups =
+    groupsCache
+      .filter(
+        g =>
+          g.type !== "solution"
+      );
+
+  openModal(`
+
+    <h2>
+      طلب تغيير المجموعة
+    </h2>
+
+    <div class="notice">
+
+      سيتم إرسال الطلب إلى الإدارة.
+      ولن تتغير مجموعتك إلا بعد موافقة الإدارة.
+
+    </div>
+
+    <form
+      class="form"
+      onsubmit="submitTransferRequest(event)"
+    >
+
+      <label>
+
+        المجموعة الحالية
+
+        <input
+          value="${esc(
+            groupName(currentProfile.group_id)
+          )}"
+          disabled
+        >
+
+      </label>
+
+      <label>
+
+        المجموعة الجديدة
+
+        <select
+          id="transferGroup"
+          required
+        >
+
+          <option value="">
+            اختر المجموعة الجديدة
+          </option>
+
+          ${
+            availableGroups
+              .filter(
+                g =>
+                  String(g.id) !==
+                  String(currentProfile.group_id)
+              )
+              .map(
+                g => `
+                  <option value="${esc(g.id)}">
+                    ${esc(g.name)}
+                  </option>
+                `
+              )
+              .join("")
+          }
+
+        </select>
+
+      </label>
+
+      <label>
+
+        سبب النقل
+
+        <textarea
+          id="transferReason"
+          rows="4"
+          placeholder="اكتب سبب طلب النقل"
+        ></textarea>
+
+      </label>
+
+      <button
+        class="btn"
+        type="submit"
+      >
+        إرسال طلب النقل
+      </button>
+
+    </form>
+
+  `);
+
+}
+
+
+// =====================================================
+// إرسال طلب النقل
+// =====================================================
+
+async function submitTransferRequest(e) {
+
+  e.preventDefault();
+
+  const newGroupId =
+    document
+      .getElementById("transferGroup")
+      .value;
+
+  const reason =
+    document
+      .getElementById("transferReason")
+      .value
+      .trim();
+
+  if (!newGroupId) {
+
+    alert("اختر المجموعة الجديدة.");
+
+    return;
+
+  }
+
+  const {
+    data: student,
+    error: studentError
+  } =
+    await sb
+      .from("students")
+      .select("*")
+      .eq(
+        "profile_id",
+        currentUser.id
+      )
+      .single();
+
+  if (studentError || !student) {
+
+    alert(
+      "لم يتم العثور على بيانات الطالب."
+    );
+
+    return;
+
+  }
+
+  const {
+    data: pending
+  } =
+    await sb
+      .from("group_transfer_requests")
+      .select("id")
+      .eq(
+        "student_id",
+        student.id
+      )
+      .eq(
+        "status",
+        "pending"
+      )
+      .maybeSingle();
+
+  if (pending) {
+
+    alert(
+      "لديك طلب نقل قيد المراجعة بالفعل."
+    );
+
+    return;
+
+  }
+
+  const {
+    error
+  } =
+    await sb
+      .from("group_transfer_requests")
+      .insert({
+
+        student_id:
+          student.id,
+
+        from_group_id:
+          student.group_id,
+
+        to_group_id:
+          newGroupId,
+
+        reason:
+          reason || null,
+
+        status:
+          "pending",
+
+        requested_by:
+          currentUser.id
+
+      });
+
+  if (error) {
+
+    alert(error.message);
+
+    return;
+
+  }
+
+  closeModal();
+
+  alert(
+    "تم إرسال طلب النقل للإدارة بنجاح."
+  );
+
+}
+
+
+// =====================================================
+// سجل نقل المجموعات
+// =====================================================
+
+async function addTransferHistory(
+  studentId,
+  fromGroupId,
+  toGroupId,
+  note
+) {
+
+  const {
+    error
+  } =
+    await sb
+      .from("student_group_history")
+      .insert({
+
+        student_id:
+          studentId,
+
+        from_group_id:
+          fromGroupId || null,
+
+        to_group_id:
+          toGroupId,
+
+        changed_by:
+          currentUser.id,
+
+        note:
+          note || null
+
+      });
+
+  if (error) {
+
+    console.error(
+      "TRANSFER HISTORY ERROR:",
+      error
+    );
+
+  }
+
+}
+
+
+// =====================================================
+// صفحة المجموعات
+// =====================================================
+
+async function loadGroupsPage() {
+
+  const el =
+    document.getElementById(
+      "groupList"
+    );
+
+  if (!el) return;
+
+  await loadGroups();
+
+  if (!groupsCache.length) {
+
+    el.innerHTML =
+      "لا توجد مجموعات.";
+
+    return;
+
+  }
+
+  el.innerHTML =
+    groupsCache
+      .map(
+        group => `
+
+          <div
+            class="notice"
+            style="margin-bottom:10px"
+          >
+
+            <strong>
+              ${esc(group.name)}
+            </strong>
+
+            ${
+              group.type === "solution"
+                ? `
+                  <span class="badge orange">
+                    حصة حل
+                  </span>
+                `
+                : `
+                  <span class="badge green">
+                    مجموعة أساسية
+                  </span>
+                `
+            }
+
+          </div>
+
+        `
+      )
+      .join("");
+
+}
+
+
+// =====================================================
+// التقارير
+// =====================================================
+
+async function loadReports() {
+
+  await loadTransferHistory();
+
+  if (
+    currentProfile.role === "admin"
+  ) {
+
+    await loadTransferRequests();
+
+  }
+
+}
+
+
+// =====================================================
+// طلبات النقل للمدير
+// =====================================================
+
+async function loadTransferRequests() {
+
+  const el =
+    document.getElementById(
+      "transferRequests"
+    );
+
+  if (!el) return;
+
+  const {
+    data,
+    error
+  } =
+    await sb
+      .from("group_transfer_requests")
+      .select(
+        `
+        *,
+        students(full_name,student_id),
+        from_group:groups!group_transfer_requests_from_group_id_fkey(name),
+        to_group:groups!group_transfer_requests_to_group_id_fkey(name)
+        `
+      )
+      .eq(
+        "status",
+        "pending"
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+  if (error) {
+
+    console.error(error);
+
+    el.innerHTML =
+      `خطأ: ${esc(error.message)}`;
+
+    return;
+
+  }
+
+  if (!data?.length) {
+
+    el.innerHTML =
+      `<div class="empty">لا توجد طلبات نقل معلقة.</div>`;
+
+    return;
+
+  }
+
+  el.innerHTML =
+    data
+      .map(
+        request => `
+
+          <div
+            class="notice"
+            style="margin-bottom:12px"
+          >
+
+            <strong>
+              ${esc(
+                request.students?.full_name
+              )}
+            </strong>
+
+            <br>
+
+            ID:
+            ${esc(
+              request.students?.student_id
+            )}
+
+            <br>
+
+            من:
+            ${esc(
+              request.from_group?.name || "—"
+            )}
+
+            <br>
+
+            إلى:
+            ${esc(
+              request.to_group?.name || "—"
+            )}
+
+            ${
+              request.reason
+                ? `
+                  <br>
+                  السبب:
+                  ${esc(request.reason)}
+                `
+                : ""
+            }
+
+            <br><br>
+
+            <button
+              class="btn"
+              onclick="approveTransfer('${request.id}')"
+            >
+              موافقة
+            </button>
+
+            <button
+              class="btn secondary"
+              onclick="rejectTransfer('${request.id}')"
+            >
+              رفض
+            </button>
+
+          </div>
+
+        `
+      )
+      .join("");
+
+}
+
+
+// =====================================================
+// الموافقة على النقل
+// =====================================================
+
+async function approveTransfer(requestId) {
+
+  const {
+    data: request,
+    error
+  } =
+    await sb
+      .from("group_transfer_requests")
+      .select("*")
+      .eq(
+        "id",
+        requestId
+      )
+      .single();
+
+  if (error || !request) {
+
+    alert(
+      "لم يتم العثور على الطلب."
+    );
+
+    return;
+
+  }
+
+  const {
+    error: updateError
+  } =
+    await sb
+      .from("students")
+      .update({
+
+        group_id:
+          request.to_group_id
+
+      })
+      .eq(
+        "id",
+        request.student_id
+      );
+
+  if (updateError) {
+
+    alert(updateError.message);
+
+    return;
+
+  }
+
+  await addTransferHistory(
+    request.student_id,
+    request.from_group_id,
+    request.to_group_id,
+    "تم تغيير المجموعة بعد موافقة الإدارة"
+  );
+
+  const {
+    error: requestError
+  } =
+    await sb
+      .from("group_transfer_requests")
+      .update({
+
+        status:
+          "approved",
+
+        reviewed_by:
+          currentUser.id,
+
+        reviewed_at:
+          new Date().toISOString()
+
+      })
+      .eq(
+        "id",
+        requestId
+      );
+
+  if (requestError) {
+
+    alert(requestError.message);
+
+    return;
+
+  }
+
+  alert(
+    "تمت الموافقة على طلب النقل."
+  );
+
+  await loadTransferRequests();
+
+}
+
+
+// =====================================================
+// رفض النقل
+// =====================================================
+
+async function rejectTransfer(requestId) {
+
+  const reason =
+    prompt(
+      "اكتب سبب رفض الطلب:"
+    );
+
+  const {
+    error
+  } =
+    await sb
+      .from("group_transfer_requests")
+      .update({
+
+        status:
+          "rejected",
+
+        reviewed_by:
+          currentUser.id,
+
+        reviewed_at:
+          new Date().toISOString(),
+
+        admin_note:
+          reason || null
+
+      })
+      .eq(
+        "id",
+        requestId
+      );
+
+  if (error) {
+
+    alert(error.message);
+
+    return;
+
+  }
+
+  alert(
+    "تم رفض طلب النقل."
+  );
+
+  await loadTransferRequests();
+
+}
+
+
+// =====================================================
+// سجل الطالب
+// =====================================================
+
+async function loadTransferHistory() {
+
+  const el =
+    document.getElementById(
+      "transferHistory"
+    );
+
+  if (!el) return;
+
+  let query =
+    sb
+      .from("student_group_history")
+      .select(
+        `
+        *,
+        students(full_name,student_id),
+        from_group:groups!student_group_history_from_group_id_fkey(name),
+        to_group:groups!student_group_history_to_group_id_fkey(name)
+        `
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+  if (
+    currentProfile.role === "student"
+  ) {
+
+    const {
+      data: student
+    } =
+      await sb
+        .from("students")
+        .select("id")
+        .eq(
+          "profile_id",
+          currentUser.id
+        )
+        .single();
+
+    if (!student) {
+
+      el.innerHTML =
+        "لا توجد بيانات.";
+
+      return;
+
+    }
+
+    query =
+      query.eq(
+        "student_id",
+        student.id
+      );
+
+  }
+
+  const {
+    data,
+    error
+  } =
+    await query;
+
+  if (error) {
+
+    console.error(error);
+
+    el.innerHTML =
+      `خطأ: ${esc(error.message)}`;
+
+    return;
+
+  }
+
+  if (!data?.length) {
+
+    el.innerHTML =
+      `<div class="empty">لا يوجد سجل تغييرات حتى الآن.</div>`;
+
+    return;
+
+  }
+
+  el.innerHTML =
+    data
+      .map(
+        item => {
+
+          const date =
+            new Date(
+              item.created_at
+            ).toLocaleString(
+              "ar-EG"
+            );
+
+          return `
+
+            <div
+              class="notice"
+              style="margin-bottom:10px"
+            >
+
+              <strong>
+                ${
+                  currentProfile.role === "admin"
+                    ? esc(
+                        item.students?.full_name
+                      )
+                    : "تغيير المجموعة"
+                }
+              </strong>
+
+              <br>
+
+              تم تغيير المجموعة من
+
+              <strong>
+                ${esc(
+                  item.from_group?.name || "—"
+                )}
+              </strong>
+
+              إلى
+
+              <strong>
+                ${esc(
+                  item.to_group?.name || "—"
+                )}
+              </strong>
+
+              <br>
+
+              التاريخ:
+              ${esc(date)}
+
+              ${
+                item.note
+                  ? `
+                    <br>
+                    ${esc(item.note)}
+                  `
+                  : ""
+              }
+
+            </div>
+
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+// =====================================================
 // إعدادات الحساب
 // =====================================================
 
 async function saveProfile(e) {
 
   e.preventDefault();
+
+  const newPhone =
+    document
+      .getElementById("profilePhone")
+      .value
+      .trim();
+
+  const newName =
+    document
+      .getElementById("profileName")
+      .value
+      .trim();
+
+  if (!newName) {
+
+    alert("الاسم مطلوب.");
+
+    return;
+
+  }
+
+  if (newPhone) {
+
+    const {
+      data: duplicate
+    } =
+      await sb
+        .from("profiles")
+        .select("id")
+        .eq(
+          "phone",
+          newPhone
+        )
+        .neq(
+          "id",
+          currentUser.id
+        )
+        .maybeSingle();
+
+    if (duplicate) {
+
+      alert(
+        "رقم الهاتف مستخدم بالفعل."
+      );
+
+      return;
+
+    }
+
+  }
 
   const {
     error
@@ -1600,14 +2904,10 @@ async function saveProfile(e) {
       .update({
 
         full_name:
-          document
-            .getElementById("profileName")
-            .value,
+          newName,
 
         phone:
-          document
-            .getElementById("profilePhone")
-            .value
+          newPhone
 
       })
       .eq(
@@ -1615,13 +2915,11 @@ async function saveProfile(e) {
         currentUser.id
       );
 
-
   alert(
     error
       ? error.message
       : "تم الحفظ"
   );
-
 
   if (!error) {
 
@@ -1692,7 +2990,6 @@ async function doPassword(e) {
 
   }
 
-
   const a =
     document
       .getElementById("newPass")
@@ -1702,7 +2999,6 @@ async function doPassword(e) {
     document
       .getElementById("newPass2")
       .value;
-
 
   if (a !== b) {
 
@@ -1714,7 +3010,6 @@ async function doPassword(e) {
 
   }
 
-
   const {
     error
   } =
@@ -1722,12 +3017,10 @@ async function doPassword(e) {
       password: a
     });
 
-
   alert(
     error?.message ||
     "تم تغيير كلمة المرور"
   );
-
 
   if (!error) {
 
@@ -1807,7 +3100,76 @@ async function saveAttendance() {
 // PDF
 // =====================================================
 
-function studentPDF(s) {
+async function studentPDF(s) {
+
+  let history = [];
+
+  const {
+    data
+  } =
+    await sb
+      .from("student_group_history")
+      .select(
+        `
+        *,
+        from_group:groups!student_group_history_from_group_id_fkey(name),
+        to_group:groups!student_group_history_to_group_id_fkey(name)
+        `
+      )
+      .eq(
+        "student_id",
+        s.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+  history =
+    data || [];
+
+  const historyHTML =
+    history.length
+      ? history
+          .map(
+            h => `
+
+              <tr>
+
+                <td>
+                  ${esc(
+                    h.from_group?.name || "—"
+                  )}
+                </td>
+
+                <td>
+                  ${esc(
+                    h.to_group?.name || "—"
+                  )}
+                </td>
+
+                <td>
+                  ${esc(
+                    new Date(
+                      h.created_at
+                    ).toLocaleString("ar-EG")
+                  )}
+                </td>
+
+              </tr>
+
+            `
+          )
+          .join("")
+      : `
+          <tr>
+            <td colspan="3">
+              لا يوجد سجل نقل
+            </td>
+          </tr>
+        `;
 
   const html = `
 
@@ -1830,18 +3192,25 @@ function studentPDF(s) {
           padding: 35px;
         }
 
-        h1 {
+        h1,
+        h2 {
           text-align:center;
         }
 
         table {
           width:100%;
           border-collapse:collapse;
+          margin-bottom:25px;
         }
 
-        td {
+        td,
+        th {
           border:1px solid #ddd;
           padding:10px;
+        }
+
+        th {
+          background:#f4f5f8;
         }
 
         .h {
@@ -1873,6 +3242,14 @@ function studentPDF(s) {
             ["الهاتف", s.phone || ""],
             ["ولي الأمر", s.parent_phone || ""],
             [
+              "المجموعة",
+              groupName(s.group_id)
+            ],
+            [
+              "حصة الحل",
+              groupName(s.solution_group_id)
+            ],
+            [
               "نسبة الحضور",
               (s.attendance_percent ?? 0) + "%"
             ],
@@ -1886,7 +3263,7 @@ function studentPDF(s) {
                 <tr>
 
                   <td class="h">
-                    ${x[0]}
+                    ${esc(x[0])}
                   </td>
 
                   <td>
@@ -1901,6 +3278,40 @@ function studentPDF(s) {
 
       </table>
 
+      <h2>
+        سجل تغيير المجموعة
+      </h2>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              المجموعة القديمة
+            </th>
+
+            <th>
+              المجموعة الجديدة
+            </th>
+
+            <th>
+              التاريخ
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${historyHTML}
+
+        </tbody>
+
+      </table>
+
       <script>
         window.print();
       <\/script>
@@ -1911,24 +3322,21 @@ function studentPDF(s) {
 
   `;
 
-
   const w =
     window.open(
       "",
       "_blank"
     );
 
-
   if (!w) {
 
     alert(
-      "المتصفح منع فتح نافذة PDF. اسمح بالنوافذ المنبثقة."
+      "المتصفح منع فتح نافذة PDF."
     );
 
     return;
 
   }
-
 
   w.document.write(html);
 
@@ -1948,21 +3356,16 @@ function applyFont() {
       .getElementById("fontFile")
       ?.files[0];
 
-
   if (!file) {
 
-    alert(
-      "اختر الخط"
-    );
+    alert("اختر الخط");
 
     return;
 
   }
 
-
   const reader =
     new FileReader();
-
 
   reader.onload =
     event => {
@@ -1972,7 +3375,6 @@ function applyFont() {
           "UploadedFont",
           event.target.result
         );
-
 
       font
         .load()
@@ -1992,7 +3394,6 @@ function applyFont() {
         });
 
     };
-
 
   reader.readAsArrayBuffer(file);
 
