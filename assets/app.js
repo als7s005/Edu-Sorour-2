@@ -1764,65 +1764,45 @@ async function addStudent() {
 
         <label>
 
-          حصة الحل
+  مجموعة الحل
 
-          <select
-            id="ssolution"
-            name="solution_group_id"
-            required
-          >
+  <select
+    id="ssolution"
+    name="solution_group_id"
+    required
+  >
 
-            <option value="">
-              اختر حصة الحل
+    <option value="">
+      اختر مجموعة الحل
+    </option>
+
+    ${
+      solGroups
+        .map(
+          group => `
+            <option value="${esc(group.id)}">
+
+              ${esc(group.name)}
+
+              -
+              ${formatSolutionDays(group)}
+
+              -
+              ${formatTime(group.start_time)}
+
+              إلى
+
+              ${formatTime(group.end_time)}
+
             </option>
+          `
+        )
+        .join("")
+    }
 
-            ${
-              solGroups.length
-                ? solGroups
-                    .map(
-                      group => `
-                        <option
-                          value="${esc(group.id)}"
-                        >
+  </select>
 
-                          ${esc(
-                            group.name
-                          )}
-
-                          -
-                          ${formatSolutionDays(
-                            group
-                          )}
-
-                          -
-                          ${formatTime(
-                            group.start_time
-                          )}
-
-                          إلى
-
-                          ${formatTime(
-                            group.end_time
-                          )}
-
-                        </option>
-                      `
-                    )
-                    .join("")
-                : `
-                    <option
-                      value=""
-                      disabled
-                    >
-                      لا توجد حصص حل متاحة
-                    </option>
-                  `
-            }
-
-          </select>
-
-        </label>
-
+</label>
 
         <label>
 
