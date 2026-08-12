@@ -1,5 +1,9 @@
 // =====================================================
-// SUPABASE
+// EduCenter - APP.JS
+// =====================================================
+
+// =====================================================
+// Supabase
 // =====================================================
 
 const hasSupabase =
@@ -17,7 +21,7 @@ const sb = hasSupabase
 
 
 // =====================================================
-// متغيرات النظام
+// الحالة العامة
 // =====================================================
 
 let currentUser = null;
@@ -30,62 +34,21 @@ let page = "dashboard";
 // =====================================================
 
 const titles = {
-
-  dashboard: [
-    "لوحة التحكم",
-    "نظرة سريعة على النظام"
-  ],
-
-  students: [
-    "الطلاب",
-    "إدارة بيانات الطلاب والحسابات"
-  ],
-
-  teachers: [
-    "المعلمين",
-    "إدارة المعلمين والصلاحيات"
-  ],
-
-  groups: [
-    "المجموعات",
-    "المجموعات ومواعيد الحضور"
-  ],
-
-  attendance: [
-    "الحضور",
-    "تسجيل ومتابعة الحضور"
-  ],
-
-  exams: [
-    "الامتحانات",
-    "الدرجات والتقييمات"
-  ],
-
-  messages: [
-    "المحادثات",
-    "شات الطلاب مع المعلمين"
-  ],
-
-  notifications: [
-    "الإشعارات",
-    "إرسال التنبيهات"
-  ],
-
-  reports: [
-    "التقارير",
-    "تقارير الأداء والحضور"
-  ],
-
-  settings: [
-    "الإعدادات",
-    "إعدادات الحساب والنظام"
-  ]
-
+  dashboard: ["لوحة التحكم", "نظرة سريعة على النظام"],
+  students: ["الطلاب", "إدارة بيانات الطلاب والحسابات"],
+  teachers: ["المعلمين", "إدارة المعلمين والصلاحيات"],
+  groups: ["المجموعات", "المجموعات ومواعيد الحضور"],
+  attendance: ["الحضور", "تسجيل ومتابعة الحضور"],
+  exams: ["الامتحانات", "الدرجات والتقييمات"],
+  messages: ["المحادثات", "شات الطلاب مع المعلمين"],
+  notifications: ["الإشعارات", "إرسال التنبيهات"],
+  reports: ["التقارير", "تقارير الأداء والحضور"],
+  settings: ["الإعدادات", "إعدادات الحساب والنظام"]
 };
 
 
 // =====================================================
-// القوائم حسب الصلاحية
+// صلاحيات التنقل
 // =====================================================
 
 const navByRole = {
@@ -145,39 +108,64 @@ async function boot() {
     return;
   }
 
-  const {
-    data: {
-      session
+  try {
+
+    const {
+      data: { session },
+      error
+    } = await sb.auth.getSession();
+
+    if (error) {
+      console.error(error);
     }
-  } = await sb.auth.getSession();
 
-  if (session) {
+    if (session) {
 
-    currentUser = session.user;
+      currentUser = session.user;
 
-    await loadProfile();
+      await loadProfile();
 
-  } else {
+    } else {
+
+      showLogin();
+
+    }
+
+  } catch (error) {
+
+    console.error("BOOT ERROR:", error);
 
     showLogin();
 
   }
 
+
   sb.auth.onAuthStateChange(
-    async (event, session) => {
+    async (_event, session) => {
 
-      if (session) {
+      try {
 
-        currentUser = session.user;
+        if (session) {
 
-        await loadProfile();
+          currentUser = session.user;
 
-      } else {
+          await loadProfile();
 
-        currentUser = null;
-        currentProfile = null;
+        } else {
 
-        showLogin();
+          currentUser = null;
+          currentProfile = null;
+
+          showLogin();
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "AUTH STATE ERROR:",
+          error
+        );
 
       }
 
@@ -207,11 +195,32 @@ async function loadProfile() {
     .from("profiles")
     .select("*")
     .eq("id", currentUser.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
 
-    console.error(error);
+  if (error) {
+
+    console.error(
+      "PROFILE ERROR:",
+      error
+    );
+
+    showLogin();
+
+    setLoginMessage(
+      "حدث خطأ أثناء تحميل بيانات الحساب."
+    );
+
+    return;
+  }
+
+
+  if (!data) {
+
+    console.error(
+      "لم يتم العثور على profile للمستخدم:",
+      currentUser.id
+    );
 
     showLogin();
 
@@ -222,16 +231,18 @@ async function loadProfile() {
     return;
   }
 
+
   currentProfile = data;
 
   showApp();
 
   render();
+
 }
 
 
 // =====================================================
-// تسجيل الدخول
+// إظهار تسجيل الدخول
 // =====================================================
 
 function showLogin() {
@@ -243,6 +254,7 @@ function showLogin() {
   document
     .getElementById("app")
     ?.classList.add("hidden");
+
 }
 
 
@@ -260,9 +272,12 @@ function showApp() {
     .getElementById("app")
     ?.classList.remove("hidden");
 
+
   const name =
     currentProfile?.full_name ||
+    currentUser?.email ||
     "مستخدم";
+
 
   const userName =
     document.getElementById("userName");
@@ -276,20 +291,27 @@ function showApp() {
   const avatar =
     document.getElementById("avatar");
 
+
   if (userName)
     userName.textContent = name;
 
+
   if (roleLabel)
     roleLabel.textContent =
-      roleArabic(currentProfile.role);
+      roleArabic(
+        currentProfile?.role
+      );
+
 
   if (userMeta)
     userMeta.textContent =
-      currentProfile.role;
+      currentProfile?.role || "";
+
 
   if (avatar)
     avatar.textContent =
       name[0] || "م";
+
 }
 
 
@@ -305,13 +327,13 @@ function roleArabic(role) {
     teacher: "معلم",
     student: "طالب"
 
-  }[role] || role;
+  }[role] || role || "";
 
 }
 
 
 // =====================================================
-// رسالة الدخول
+// رسالة تسجيل الدخول
 // =====================================================
 
 function setLoginMessage(message) {
@@ -321,6 +343,7 @@ function setLoginMessage(message) {
 
   if (el)
     el.textContent = message;
+
 }
 
 
@@ -331,6 +354,7 @@ function setLoginMessage(message) {
 const loginForm =
   document.getElementById("loginForm");
 
+
 if (loginForm) {
 
   loginForm.addEventListener(
@@ -338,6 +362,7 @@ if (loginForm) {
     async (e) => {
 
       e.preventDefault();
+
 
       if (!sb) {
 
@@ -348,62 +373,151 @@ if (loginForm) {
         return;
       }
 
+
       const id =
         document
           .getElementById("loginId")
           ?.value
-          .trim();
+          .trim() || "";
+
 
       const pass =
         document
           .getElementById("loginPassword")
           ?.value || "";
 
+
       if (!id || !pass) {
 
         setLoginMessage(
-          "أدخل بيانات الدخول."
+          "اكتب بيانات الدخول."
         );
 
         return;
       }
 
-      let email = id;
 
-      const {
-        data: studentData
-      } = await sb
-        .from("profiles")
-        .select("email")
-        .eq("student_id", id)
-        .maybeSingle();
+      const button =
+        loginForm.querySelector(
+          'button[type="submit"]'
+        );
 
-      if (studentData?.email)
-        email = studentData.email;
 
-      const {
-        data,
-        error
-      } =
-        await sb.auth.signInWithPassword({
-          email,
-          password: pass
-        });
+      const oldText =
+        button?.textContent || "";
 
-      if (error) {
 
-        console.error(error);
+      if (button) {
+
+        button.disabled = true;
+
+        button.textContent =
+          "جاري تسجيل الدخول...";
+
+      }
+
+
+      try {
+
+        // ==========================================
+        // لو المستخدم كتب Email
+        // أو Student ID
+        // ==========================================
+
+        let email = id;
+
+
+        // لو مش Email نحاول نجيب Email من profiles
+        if (!id.includes("@")) {
+
+          const {
+            data: studentData,
+            error: studentError
+          } = await sb
+            .from("profiles")
+            .select("email")
+            .eq("student_id", id)
+            .maybeSingle();
+
+
+          if (studentError) {
+
+            console.warn(
+              "Student ID lookup:",
+              studentError
+            );
+
+          }
+
+
+          if (studentData?.email) {
+
+            email =
+              studentData.email;
+
+          }
+
+        }
+
+
+        const {
+          data,
+          error
+        } =
+          await sb.auth.signInWithPassword({
+
+            email,
+            password: pass
+
+          });
+
+
+        if (error) {
+
+          console.error(
+            "LOGIN ERROR:",
+            error
+          );
+
+          setLoginMessage(
+            "بيانات الدخول غير صحيحة."
+          );
+
+          return;
+        }
+
+
+        currentUser =
+          data.user;
+
+
+        await loadProfile();
+
+
+      } catch (error) {
+
+        console.error(
+          "LOGIN ERROR:",
+          error
+        );
 
         setLoginMessage(
-          "بيانات الدخول غير صحيحة."
+          error.message ||
+          "حدث خطأ أثناء تسجيل الدخول."
         );
 
-        return;
+      } finally {
+
+        if (button) {
+
+          button.disabled = false;
+
+          button.textContent =
+            oldText;
+
+        }
+
       }
-
-      currentUser = data.user;
-
-      await loadProfile();
 
     }
   );
@@ -418,13 +532,33 @@ if (loginForm) {
 const logoutBtn =
   document.getElementById("logout");
 
+
 if (logoutBtn) {
 
   logoutBtn.onclick =
     async () => {
 
-      if (sb)
+      if (!sb)
+        return;
+
+
+      try {
+
         await sb.auth.signOut();
+
+        currentUser = null;
+        currentProfile = null;
+
+        showLogin();
+
+      } catch (error) {
+
+        console.error(
+          "LOGOUT ERROR:",
+          error
+        );
+
+      }
 
     };
 
@@ -437,38 +571,55 @@ if (logoutBtn) {
 
 function render() {
 
+  if (!currentProfile)
+    return;
+
+
   const pageTitle =
     document.getElementById("pageTitle");
 
   const pageSub =
     document.getElementById("pageSub");
 
+
   if (pageTitle)
     pageTitle.textContent =
       titles[page]?.[0] || "";
+
 
   if (pageSub)
     pageSub.textContent =
       titles[page]?.[1] || "";
 
+
   const nav =
     document.getElementById("nav");
+
 
   if (nav) {
 
     nav.innerHTML =
-      (navByRole[currentProfile?.role] || [])
+      (navByRole[currentProfile.role] || [])
         .map(
           item => `
+
             <button
-              class="${item[0] === page ? "active" : ""}"
-              data-page="${item[0]}"
+              class="${
+                item[0] === page
+                  ? "active"
+                  : ""
+              }"
+              data-page="${esc(item[0])}"
             >
+
               ${esc(item[1])}
+
             </button>
+
           `
         )
         .join("");
+
 
     nav
       .querySelectorAll("button")
@@ -487,17 +638,22 @@ function render() {
 
   }
 
+
   const content =
     document.getElementById("content");
+
 
   if (!content)
     return;
 
+
   content.innerHTML =
     pageHTML(page);
 
+
   if (page === "students")
     loadStudents();
+
 
   if (page === "groups")
     loadGroups();
@@ -538,17 +694,20 @@ function pageHTML(p) {
           ${
             currentProfile.role === "admin"
               ? `
+
                 <button
                   class="btn"
                   onclick="addStudent()"
                 >
                   + إضافة طالب
                 </button>
+
               `
               : ""
           }
 
         </div>
+
 
         <div class="searchbar">
 
@@ -558,6 +717,7 @@ function pageHTML(p) {
           >
 
         </div>
+
 
         <div class="table-wrap">
 
@@ -602,6 +762,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -638,6 +799,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -659,12 +821,20 @@ function pageHTML(p) {
               المجموعات الأساسية
             </h2>
 
-            <button
-              class="btn"
-              onclick="addGroup('main')"
-            >
-              + إضافة مجموعة
-            </button>
+            ${
+              currentProfile.role === "admin"
+                ? `
+
+                  <button
+                    class="btn"
+                    onclick="addGroup('main')"
+                  >
+                    + إضافة مجموعة
+                  </button>
+
+                `
+                : ""
+            }
 
           </div>
 
@@ -686,12 +856,20 @@ function pageHTML(p) {
               مجموعات الحل
             </h2>
 
-            <button
-              class="btn"
-              onclick="addGroup('solution')"
-            >
-              + إضافة مجموعة حل
-            </button>
+            ${
+              currentProfile.role === "admin"
+                ? `
+
+                  <button
+                    class="btn"
+                    onclick="addGroup('solution')"
+                  >
+                    + إضافة مجموعة حل
+                  </button>
+
+                `
+                : ""
+            }
 
           </div>
 
@@ -707,6 +885,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -750,6 +929,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -786,6 +966,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -812,6 +993,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <h2>المحادثة</h2>
@@ -828,6 +1010,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -862,6 +1045,7 @@ function pageHTML(p) {
 
           </label>
 
+
           <label>
 
             العنوان
@@ -872,6 +1056,7 @@ function pageHTML(p) {
             >
 
           </label>
+
 
           <label>
 
@@ -885,6 +1070,7 @@ function pageHTML(p) {
 
           </label>
 
+
           <button class="btn">
 
             إرسال
@@ -896,6 +1082,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -921,6 +1108,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <span class="kpi">
@@ -933,6 +1121,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <span class="kpi">
@@ -944,6 +1133,7 @@ function pageHTML(p) {
           </strong>
 
         </div>
+
 
         <div class="card">
 
@@ -959,9 +1149,12 @@ function pageHTML(p) {
 
       </div>
 
+
       <div class="card">
 
-        <h2>نظام النقاط</h2>
+        <h2>
+          نظام النقاط
+        </h2>
 
         <p>
           النقاط مبنية على الحضور والامتحانات والتقييم الشهري.
@@ -970,6 +1163,7 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
@@ -985,7 +1179,9 @@ function pageHTML(p) {
 
         <div class="card">
 
-          <h2>بيانات الحساب</h2>
+          <h2>
+            بيانات الحساب
+          </h2>
 
           <form
             class="form"
@@ -1005,6 +1201,7 @@ function pageHTML(p) {
 
             </label>
 
+
             <label>
 
               الهاتف
@@ -1018,11 +1215,13 @@ function pageHTML(p) {
 
             </label>
 
+
             <button class="btn">
               حفظ البيانات
             </button>
 
           </form>
+
 
           <button
             class="btn secondary"
@@ -1037,10 +1236,12 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
   return "";
+
 }
 
 
@@ -1165,6 +1366,7 @@ function dashboardHTML() {
     </div>
 
   `;
+
 }
 
 
@@ -1176,6 +1378,7 @@ async function loadStudents() {
 
   if (!sb)
     return;
+
 
   const {
     data,
@@ -1217,17 +1420,24 @@ async function loadStudents() {
         }
       );
 
+
   const body =
     document.getElementById(
       "studentBody"
     );
 
+
   if (!body)
     return;
 
+
   if (error) {
 
-    console.error(error);
+    console.error(
+      "LOAD STUDENTS ERROR:",
+      error
+    );
+
 
     body.innerHTML = `
 
@@ -1250,11 +1460,13 @@ async function loadStudents() {
     return;
   }
 
-  let arr = data || [];
+
+  let arr =
+    data || [];
+
 
   if (
-    currentProfile?.role ===
-    "student"
+    currentProfile?.role === "student"
   ) {
 
     arr =
@@ -1266,191 +1478,205 @@ async function loadStudents() {
 
   }
 
+
   body.innerHTML =
     arr
       .map(
-        student => `
+        student => {
 
-          <tr>
+          const studentName =
+            student.full_name ||
+            student.profiles?.full_name ||
+            "بدون اسم";
 
-            <td>
 
-              <div class="student-row">
+          return `
 
-                <span class="mini">
+            <tr>
 
-                  ${
-                    (
-                      student.full_name ||
-                      student.profiles?.full_name ||
+              <td>
+
+                <div class="student-row">
+
+                  <span class="mini">
+
+                    ${esc(
+                      studentName[0] ||
                       "?"
-                    )[0]
-                  }
+                    )}
 
-                </span>
+                  </span>
+
+                  <b>
+                    ${esc(
+                      studentName
+                    )}
+                  </b>
+
+                </div>
+
+              </td>
+
+
+              <td>
+                ${esc(
+                  student.student_id ||
+                  ""
+                )}
+              </td>
+
+
+              <td>
+                ${esc(
+                  gradeArabic(
+                    student.grade
+                  )
+                )}
+              </td>
+
+
+              <td>
 
                 <b>
                   ${esc(
-                    student.full_name ||
-                    student.profiles?.full_name ||
+                    student.groups?.name ||
                     "—"
                   )}
                 </b>
 
-              </div>
-
-            </td>
-
-
-            <td>
-              ${esc(
-                student.student_id
-              )}
-            </td>
-
-
-            <td>
-              ${esc(
-                gradeArabic(
-                  student.grade
-                )
-              )}
-            </td>
-
-
-            <td>
-
-              <b>
-                ${esc(
-                  student.groups?.name ||
-                  "—"
-                )}
-              </b>
-
-              ${
-                student.groups
-                  ? `
-                    <small
-                      style="
-                        display:block;
-                        color:#718096;
-                        margin-top:4px
-                      "
-                    >
-
-                      ${formatGroupDays(
-                        student.groups
-                      )}
-
-                      ${
-                        student.groups.start_time
-                          ? `
-                            -
-                            ${formatTime(
-                              student.groups.start_time
-                            )}
-                          `
-                          : ""
-                      }
-
-                    </small>
-                  `
-                  : ""
-              }
-
-            </td>
-
-
-            <td>
-
-              <b>
-                ${esc(
-                  student.solution_group?.name ||
-                  "—"
-                )}
-              </b>
-
-              ${
-                student.solution_group
-                  ? `
-                    <small
-                      style="
-                        display:block;
-                        color:#718096;
-                        margin-top:4px
-                      "
-                    >
-
-                      ${formatSolutionDays(
-                        student.solution_group
-                      )}
-
-                      ${
-                        student.solution_group.start_time
-                          ? `
-                            -
-                            ${formatTime(
-                              student.solution_group.start_time
-                            )}
-                            إلى
-                            ${formatTime(
-                              student.solution_group.end_time
-                            )}
-                          `
-                          : ""
-                      }
-
-                    </small>
-                  `
-                  : ""
-              }
-
-            </td>
-
-
-            <td>
-
-              ${
-                student.attendance_percent ??
-                0
-              }%
-
-            </td>
-
-
-            <td>
-
-              <span class="badge orange">
-
                 ${
-                  student.points ??
-                  0
+                  student.groups
+                    ? `
+
+                      <small
+                        style="
+                          display:block;
+                          color:#718096;
+                          margin-top:4px
+                        "
+                      >
+
+                        ${formatGroupDays(
+                          student.groups
+                        )}
+
+                        ${
+                          student.groups.start_time
+                            ? `
+                              -
+                              ${formatTime(
+                                student.groups.start_time
+                              )}
+                            `
+                            : ""
+                        }
+
+                      </small>
+
+                    `
+                    : ""
                 }
 
-              </span>
-
-            </td>
+              </td>
 
 
-            <td>
+              <td>
 
-              <button
-                class="btn secondary"
-                onclick='studentPDF(${JSON.stringify(
-                  student
-                ).replace(/'/g, "&#39;")})'
-              >
-                PDF
-              </button>
+                <b>
+                  ${esc(
+                    student.solution_group?.name ||
+                    "—"
+                  )}
+                </b>
 
-            </td>
+                ${
+                  student.solution_group
+                    ? `
 
-          </tr>
+                      <small
+                        style="
+                          display:block;
+                          color:#718096;
+                          margin-top:4px
+                        "
+                      >
 
-        `
+                        ${formatSolutionDays(
+                          student.solution_group
+                        )}
+
+                        ${
+                          student.solution_group.start_time
+                            ? `
+                              -
+                              ${formatTime(
+                                student.solution_group.start_time
+                              )}
+
+                              إلى
+
+                              ${formatTime(
+                                student.solution_group.end_time
+                              )}
+                            `
+                            : ""
+                        }
+
+                      </small>
+
+                    `
+                    : ""
+                }
+
+              </td>
+
+
+              <td>
+
+                ${
+                  student.attendance_percent ??
+                  0
+                }%
+
+              </td>
+
+
+              <td>
+
+                <span class="badge orange">
+
+                  ${
+                    student.points ??
+                    0
+                  }
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <button
+                  class="btn secondary"
+                  onclick='studentPDF(${JSON.stringify(
+                    student
+                  )})'
+                >
+                  PDF
+                </button>
+
+              </td>
+
+            </tr>
+
+          `;
+
+        }
       )
       .join("")
     ||
+
     `
 
       <tr>
@@ -1474,6 +1700,7 @@ async function loadStudents() {
       "studentSearch"
     );
 
+
   if (input) {
 
     input.oninput = () => {
@@ -1483,6 +1710,7 @@ async function loadStudents() {
           .trim()
           .toLowerCase();
 
+
       [
         ...body.rows
       ].forEach(row => {
@@ -1491,8 +1719,8 @@ async function loadStudents() {
           row.innerText
             .toLowerCase()
             .includes(q)
-            ? ""
-            : "none";
+              ? ""
+              : "none";
 
       });
 
@@ -1512,6 +1740,11 @@ async function addStudent() {
   if (!sb)
     return;
 
+
+  // ================================================
+  // تحميل المجموعات الأساسية
+  // ================================================
+
   const {
     data: groups,
     error: groupsError
@@ -1519,8 +1752,16 @@ async function addStudent() {
     await sb
       .from("groups")
       .select("*")
-      .eq("group_type", "main")
+      .eq(
+        "group_type",
+        "main"
+      )
       .order("name");
+
+
+  // ================================================
+  // تحميل مجموعات الحل
+  // ================================================
 
   const {
     data: solutionGroups,
@@ -1529,17 +1770,30 @@ async function addStudent() {
     await sb
       .from("groups")
       .select("*")
-      .eq("group_type", "solution")
+      .eq(
+        "group_type",
+        "solution"
+      )
       .order("name");
 
+
   if (groupsError)
-    console.error(groupsError);
+    console.error(
+      "MAIN GROUPS ERROR:",
+      groupsError
+    );
+
 
   if (solutionError)
-    console.error(solutionError);
+    console.error(
+      "SOLUTION GROUPS ERROR:",
+      solutionError
+    );
+
 
   const mainGroups =
     groups || [];
+
 
   const solGroups =
     solutionGroups || [];
@@ -1551,6 +1805,7 @@ async function addStudent() {
       إضافة طالب جديد
     </h2>
 
+
     <form
       id="createStudentForm"
       class="form"
@@ -1558,6 +1813,7 @@ async function addStudent() {
     >
 
       <div class="form-grid">
+
 
         <label>
 
@@ -1638,9 +1894,10 @@ async function addStudent() {
               mainGroups
                 .map(
                   group => `
-                    <option value="${esc(
-                      group.id
-                    )}">
+
+                    <option
+                      value="${esc(group.id)}"
+                    >
 
                       ${esc(
                         group.name
@@ -1663,6 +1920,7 @@ async function addStudent() {
                       }
 
                     </option>
+
                   `
                 )
                 .join("")
@@ -1673,9 +1931,9 @@ async function addStudent() {
         </label>
 
 
-        <!-- ======================================
+        <!-- =================================================
              مجموعة الحل
-             ====================================== -->
+             ================================================= -->
 
         <label>
 
@@ -1695,6 +1953,7 @@ async function addStudent() {
               solGroups
                 .map(
                   group => `
+
                     <option
                       value="${esc(group.id)}"
                     >
@@ -1704,7 +1963,6 @@ async function addStudent() {
                       )}
 
                       -
-
                       ${formatSolutionDays(
                         group
                       )}
@@ -1722,6 +1980,7 @@ async function addStudent() {
                       )}
 
                     </option>
+
                   `
                 )
                 .join("")
@@ -1742,6 +2001,7 @@ async function addStudent() {
 
         </label>
 
+
       </div>
 
 
@@ -1761,10 +2021,7 @@ async function addStudent() {
         <br>
 
         مجموعة الحل يوم واحد فقط:
-        الأحد أو الثلاثاء أو الخميس.
-
-        <br>
-
+        الأحد أو الثلاثاء أو الخميس،
         من 10 صباحًا إلى 12 ظهرًا.
 
       </div>
@@ -1794,6 +2051,7 @@ async function createStudent(e) {
 
   e.preventDefault();
 
+
   if (!sb || !currentUser) {
 
     alert(
@@ -1809,47 +2067,82 @@ async function createStudent(e) {
 
 
   // ================================================
-  // قراءة البيانات
+  // قراءة البيانات من الفورم نفسه
   // ================================================
 
   const fullName =
-    form.querySelector("#sn")?.value.trim() ||
-    "";
+    form
+      .querySelector("#sn")
+      ?.value
+      .trim() || "";
+
 
   const phone =
-    form.querySelector("#sp")?.value.trim() ||
-    "";
+    form
+      .querySelector("#sp")
+      ?.value
+      .trim() || "";
+
 
   const parentPhone =
-    form.querySelector("#sparent")?.value.trim() ||
-    "";
+    form
+      .querySelector("#sparent")
+      ?.value
+      .trim() || "";
+
 
   const grade =
-    form.querySelector("#sg")?.value ||
-    "";
+    form
+      .querySelector("#sg")
+      ?.value || "";
+
 
   const groupId =
-    form.querySelector("#sgrp")?.value ||
-    "";
+    form
+      .querySelector("#sgrp")
+      ?.value || "";
 
-  /*
-    مهم جدًا:
 
-    مجموعة الحل نقرأها من الفورم أولًا،
-    ولو لم نجدها نقرأها من document.
-  */
+  // =================================================
+  // مهم جدًا:
+  // نقرأ select من نفس الفورم
+  // =================================================
 
   const solutionGroupElement =
-    form.querySelector("#ssolution") ||
-    document.getElementById("ssolution");
+    form.querySelector(
+      "#ssolution"
+    );
+
 
   const solutionGroupId =
-    solutionGroupElement?.value?.trim() ||
-    "";
+    solutionGroupElement
+      ?.value
+      ?.trim() || "";
+
 
   const seatNumber =
-    form.querySelector("#seat")?.value.trim() ||
-    "";
+    form
+      .querySelector("#seat")
+      ?.value
+      .trim() || "";
+
+
+  // ================================================
+  // Debug
+  // ================================================
+
+  console.log(
+    "CREATE STUDENT FORM DATA:",
+    {
+      fullName,
+      phone,
+      parentPhone,
+      grade,
+      groupId,
+      solutionGroupId,
+      seatNumber
+    }
+  );
 
 
   // ================================================
@@ -1896,18 +2189,14 @@ async function createStudent(e) {
   }
 
 
-  // ================================================
-  // التحقق من مجموعة الحل
-  // ================================================
-
   if (!solutionGroupElement) {
 
-    console.error(
-      "لم يتم العثور على #ssolution"
+    alert(
+      "لم يتم العثور على خانة مجموعة الحل."
     );
 
-    alert(
-      "لم يتم العثور على خانة مجموعة الحل. أغلق النافذة وافتح إضافة طالب مرة أخرى."
+    console.error(
+      "العنصر #ssolution غير موجود داخل الفورم."
     );
 
     return;
@@ -1916,79 +2205,12 @@ async function createStudent(e) {
 
   if (!solutionGroupId) {
 
-    console.error(
-      "قيمة مجموعة الحل فارغة",
-      solutionGroupElement
-    );
-
     alert(
       "يجب اختيار مجموعة الحل."
     );
 
-    solutionGroupElement.focus();
-
-    return;
-  }
-
-
-  console.log(
-    "Solution Group ID:",
-    solutionGroupId
-  );
-
-
-  // ================================================
-  // التأكد أن المجموعة موجودة فعلًا
-  // ================================================
-
-  const {
-    data: selectedSolutionGroup,
-    error: solutionCheckError
-  } =
-    await sb
-      .from("groups")
-      .select(
-        "id,name,group_type,grade,day1,start_time,end_time"
-      )
-      .eq(
-        "id",
-        solutionGroupId
-      )
-      .maybeSingle();
-
-
-  if (solutionCheckError) {
-
     console.error(
-      "خطأ أثناء فحص مجموعة الحل:",
-      solutionCheckError
-    );
-
-    alert(
-      "تعذر التحقق من مجموعة الحل."
-    );
-
-    return;
-  }
-
-
-  if (!selectedSolutionGroup) {
-
-    alert(
-      "مجموعة الحل التي اخترتها غير موجودة في قاعدة البيانات."
-    );
-
-    return;
-  }
-
-
-  if (
-    selectedSolutionGroup.group_type !==
-    "solution"
-  ) {
-
-    alert(
-      "المجموعة المختارة ليست مجموعة حل."
+      "قيمة مجموعة الحل فارغة."
     );
 
     return;
@@ -1996,7 +2218,7 @@ async function createStudent(e) {
 
 
   // ================================================
-  // التأكد من عدم تكرار الهاتف
+  // فحص الهاتف
   // ================================================
 
   const {
@@ -2016,7 +2238,7 @@ async function createStudent(e) {
   if (studentCheckError) {
 
     console.error(
-      "خطأ أثناء فحص الطالب:",
+      "STUDENT CHECK ERROR:",
       studentCheckError
     );
 
@@ -2034,7 +2256,7 @@ async function createStudent(e) {
 
 
   // ================================================
-  // ولي الأمر
+  // فحص هاتف ولي الأمر
   // ================================================
 
   if (parentPhone) {
@@ -2056,7 +2278,7 @@ async function createStudent(e) {
     if (parentCheckError) {
 
       console.error(
-        "خطأ أثناء فحص هاتف ولي الأمر:",
+        "PARENT CHECK ERROR:",
         parentCheckError
       );
 
@@ -2092,8 +2314,10 @@ async function createStudent(e) {
   ) {
 
     alert(
-      "انتهت جلسة تسجيل الدخول."
+      "انتهت جلسة تسجيل الدخول. سجل الدخول مرة أخرى."
     );
+
+    showLogin();
 
     return;
   }
@@ -2107,6 +2331,7 @@ async function createStudent(e) {
     form.querySelector(
       'button[type="submit"]'
     );
+
 
   const oldText =
     button?.textContent ||
@@ -2129,23 +2354,11 @@ async function createStudent(e) {
 
   try {
 
-    console.log(
-      "بيانات الطالب قبل الإرسال:",
-      {
-        fullName,
-        phone,
-        parentPhone,
-        grade,
-        groupId,
-        solutionGroupId,
-        seatNumber
-      }
-    );
-
-
     const response =
       await fetch(
+
         `${window.SUPABASE_URL}/functions/v1/create-student`,
+
         {
 
           method: "POST",
@@ -2163,65 +2376,51 @@ async function createStudent(e) {
 
           },
 
-          body:
-            JSON.stringify({
+          body: JSON.stringify({
 
-              full_name:
-                fullName,
+            full_name:
+              fullName,
 
-              phone:
-                phone,
+            phone:
+              phone,
 
-              parent_phone:
-                parentPhone,
+            parent_phone:
+              parentPhone,
 
-              grade:
-                grade,
+            grade:
+              grade,
 
-              group_id:
-                groupId,
+            group_id:
+              groupId,
 
-              solution_group_id:
-                solutionGroupId,
+            // =================================================
+            // مهم جدًا
+            // اسم الحقل مطابق لما تستقبله Edge Function
+            // =================================================
 
-              seat_number:
-                seatNumber
+            solution_group_id:
+              solutionGroupId,
 
-            })
+            seat_number:
+              seatNumber
+
+          })
 
         }
+
       );
 
 
-    const responseText =
-      await response.text();
-
-
-    let result = {};
-
-    try {
-
-      result =
-        responseText
-          ? JSON.parse(responseText)
-          : {};
-
-    } catch (jsonError) {
-
-      console.error(
-        "Response is not JSON:",
-        responseText
-      );
-
-      throw new Error(
-        "السيرفر أرسل ردًا غير صحيح."
-      );
-
-    }
+    const result =
+      await response
+        .json()
+        .catch(
+          () => ({})
+        );
 
 
     console.log(
-      "رد السيرفر:",
+      "CREATE STUDENT RESPONSE:",
       result
     );
 
@@ -2232,9 +2431,11 @@ async function createStudent(e) {
     ) {
 
       throw new Error(
+
         result.error ||
         result.message ||
-        `حدث خطأ من السيرفر (${response.status})`
+        "حدث خطأ أثناء إنشاء الطالب."
+
       );
 
     }
@@ -2245,16 +2446,16 @@ async function createStudent(e) {
       {};
 
 
-    // ==============================================
-    // إغلاق نافذة الإضافة
-    // ==============================================
+    // ================================================
+    // إغلاق فورم الإضافة
+    // ================================================
 
     closeModal();
 
 
-    // ==============================================
+    // ================================================
     // عرض بيانات الطالب
-    // ==============================================
+    // ================================================
 
     openModal(`
 
@@ -2342,8 +2543,9 @@ async function createStudent(e) {
       error
     );
 
+
     alert(
-      error?.message ||
+      error.message ||
       "حدث خطأ أثناء إنشاء الطالب."
     );
 
@@ -2373,6 +2575,7 @@ async function loadGroups() {
   if (!sb)
     return;
 
+
   const {
     data,
     error
@@ -2393,6 +2596,7 @@ async function loadGroups() {
       "groupList"
     );
 
+
   const solutionList =
     document.getElementById(
       "solutionGroupList"
@@ -2401,7 +2605,11 @@ async function loadGroups() {
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "LOAD GROUPS ERROR:",
+      error
+    );
+
 
     const msg =
       `خطأ: ${esc(
@@ -2423,8 +2631,12 @@ async function loadGroups() {
   }
 
 
+  const allGroups =
+    data || [];
+
+
   const mainGroups =
-    (data || []).filter(
+    allGroups.filter(
       group =>
         group.group_type ===
         "main"
@@ -2432,7 +2644,7 @@ async function loadGroups() {
 
 
   const solutionGroups =
-    (data || []).filter(
+    allGroups.filter(
       group =>
         group.group_type ===
         "solution"
@@ -2547,9 +2759,7 @@ function groupCardHTML(
                   group
                 )})'
               >
-
                 تعديل
-
               </button>
 
             `
@@ -2563,11 +2773,8 @@ function groupCardHTML(
       <p>
 
         الصف:
-
-        ${esc(
-          gradeArabic(
-            group.grade
-          )
+        ${gradeArabic(
+          group.grade
         )}
 
       </p>
@@ -2868,25 +3075,6 @@ function addGroup(type) {
               value="60"
             >
 
-
-            <div class="notice">
-
-              المجموعة الأساسية يومان أسبوعيًا.
-
-              <br>
-
-              السبت والثلاثاء
-
-              <br>
-
-              الأحد والأربعاء
-
-              <br>
-
-              الاثنين والخميس
-
-            </div>
-
           `
       }
 
@@ -2922,32 +3110,34 @@ function addGroup(type) {
 
 
 // =====================================================
-// توليد اسم المجموعة
+// اسم المجموعة تلقائيًا
 // =====================================================
 
-function setupGroupNamePreview(
-  type
-) {
+function setupGroupNamePreview(type) {
 
   const grade =
     document.getElementById(
       "groupGrade"
     );
 
+
   const day =
     document.getElementById(
       "groupDay1"
     );
+
 
   const schedule =
     document.getElementById(
       "mainSchedule"
     );
 
+
   const start =
     document.getElementById(
       "groupStart"
     );
+
 
   const preview =
     document.getElementById(
@@ -2990,13 +3180,19 @@ function setupGroupNamePreview(
 
 
       preview.innerHTML =
-        `<strong>اسم المجموعة:</strong>
-        ${esc(
-          `${gradeText} - مجموعة الحل - ${dayText} - 10:00 ص إلى 12:00 م`
-        )}`;
+        `
+
+          <strong>
+            اسم المجموعة:
+          </strong>
+
+          ${esc(
+            `${gradeText} - مجموعة الحل - ${dayText} - 10:00 ص إلى 12:00 م`
+          )}
+
+        `;
 
       return;
-
     }
 
 
@@ -3011,9 +3207,7 @@ function setupGroupNamePreview(
       daysText =
         "السبت والثلاثاء";
 
-    }
-
-    else if (
+    } else if (
       schedule?.value ===
       "sunday_wednesday"
     ) {
@@ -3021,9 +3215,7 @@ function setupGroupNamePreview(
       daysText =
         "الأحد والأربعاء";
 
-    }
-
-    else if (
+    } else if (
       schedule?.value ===
       "monday_thursday"
     ) {
@@ -3048,10 +3240,17 @@ function setupGroupNamePreview(
 
 
     preview.innerHTML =
-      `<strong>اسم المجموعة:</strong>
-      ${esc(
-        `${gradeText} - ${daysText} - ${formatTime(start.value)}`
-      )}`;
+      `
+
+        <strong>
+          اسم المجموعة:
+        </strong>
+
+        ${esc(
+          `${gradeText} - ${daysText} - ${formatTime(start.value)}`
+        )}
+
+      `;
 
   }
 
@@ -3103,19 +3302,15 @@ function setupGroupNamePreview(
 
       if (selected) {
 
-        document
-          .getElementById(
-            "groupDay1"
-          )
-          .value =
+        document.getElementById(
+          "groupDay1"
+        ).value =
           selected[0];
 
 
-        document
-          .getElementById(
-            "groupDay2"
-          )
-          .value =
+        document.getElementById(
+          "groupDay2"
+        ).value =
           selected[1];
 
       }
@@ -3148,6 +3343,12 @@ async function saveGroup(
 ) {
 
   e.preventDefault();
+
+
+  if (!sb) {
+    alert("Supabase غير متصل.");
+    return;
+  }
 
 
   const isSolution =
@@ -3202,9 +3403,7 @@ async function saveGroup(
     duration =
       120;
 
-  }
-
-  else {
+  } else {
 
     startTime =
       document
@@ -3268,7 +3467,7 @@ async function saveGroup(
   }
 
 
-  let groupName = "";
+  let groupName;
 
 
   if (isSolution) {
@@ -3276,9 +3475,7 @@ async function saveGroup(
     groupName =
       `${gradeArabic(grade)} - مجموعة الحل - ${dayArabic(day1)} - 10:00 ص إلى 12:00 م`;
 
-  }
-
-  else {
+  } else {
 
     groupName =
       `${gradeArabic(grade)} - ${dayArabic(day1)} و${dayArabic(day2)} - ${formatTime(startTime)}`;
@@ -3287,7 +3484,8 @@ async function saveGroup(
 
 
   const {
-    data: existing
+    data: existing,
+    error: existingError
   } =
     await sb
       .from("groups")
@@ -3309,6 +3507,15 @@ async function saveGroup(
         day2
       )
       .maybeSingle();
+
+
+  if (existingError) {
+
+    console.error(
+      existingError
+    );
+
+  }
 
 
   if (existing) {
@@ -3363,7 +3570,10 @@ async function saveGroup(
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "SAVE GROUP ERROR:",
+      error
+    );
 
     alert(
       error.message
@@ -3381,12 +3591,10 @@ async function saveGroup(
 
 
 // =====================================================
-// تعديل المجموعة
+// تعديل مجموعة
 // =====================================================
 
-function editGroup(
-  group
-) {
+function editGroup(group) {
 
   const isSolution =
     group.group_type ===
@@ -3402,7 +3610,7 @@ function editGroup(
 
     <form
       class="form"
-      onsubmit="updateGroup(event, '${group.id}', '${group.group_type}')"
+      onsubmit="updateGroup(event, '${esc(group.id)}', '${esc(group.group_type)}')"
     >
 
 
@@ -3443,7 +3651,6 @@ function editGroup(
                   الأول الثانوي
                 </option>
 
-
                 <option
                   value="third_secondary"
                   ${
@@ -3481,8 +3688,7 @@ function editGroup(
                 <option
                   value="sunday"
                   ${
-                    group.day1 ===
-                    "sunday"
+                    group.day1 === "sunday"
                       ? "selected"
                       : ""
                   }
@@ -3493,8 +3699,7 @@ function editGroup(
                 <option
                   value="tuesday"
                   ${
-                    group.day1 ===
-                    "tuesday"
+                    group.day1 === "tuesday"
                       ? "selected"
                       : ""
                   }
@@ -3505,8 +3710,7 @@ function editGroup(
                 <option
                   value="thursday"
                   ${
-                    group.day1 ===
-                    "thursday"
+                    group.day1 === "thursday"
                       ? "selected"
                       : ""
                   }
@@ -3758,9 +3962,7 @@ async function updateGroup(
     duration =
       120;
 
-  }
-
-  else {
+  } else {
 
     startTime =
       document
@@ -3786,9 +3988,7 @@ async function updateGroup(
     groupName =
       `${gradeArabic(grade)} - مجموعة الحل - ${dayArabic(day1)} - 10:00 ص إلى 12:00 م`;
 
-  }
-
-  else {
+  } else {
 
     groupName =
       `${gradeArabic(grade)} - ${dayArabic(day1)} و${dayArabic(day2)} - ${formatTime(startTime)}`;
@@ -3842,7 +4042,10 @@ async function updateGroup(
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "UPDATE GROUP ERROR:",
+      error
+    );
 
     alert(
       error.message
@@ -3894,9 +4097,7 @@ function dayArabic(day) {
 // أيام المجموعة الأساسية
 // =====================================================
 
-function formatGroupDays(
-  group
-) {
+function formatGroupDays(group) {
 
   const result = [];
 
@@ -3929,9 +4130,7 @@ function formatGroupDays(
 // أيام مجموعة الحل
 // =====================================================
 
-function formatSolutionDays(
-  group
-) {
+function formatSolutionDays(group) {
 
   if (!group)
     return "—";
@@ -3952,23 +4151,22 @@ function formatSolutionDays(
 // الوقت
 // =====================================================
 
-function normalizeTime(
-  time
-) {
+function normalizeTime(time) {
 
   if (!time)
     return "";
 
 
   return String(time)
-    .substring(0, 5);
+    .substring(
+      0,
+      5
+    );
 
 }
 
 
-function formatTime(
-  time
-) {
+function formatTime(time) {
 
   if (!time)
     return "—";
@@ -3976,7 +4174,10 @@ function formatTime(
 
   const parts =
     String(time)
-      .substring(0, 5)
+      .substring(
+        0,
+        5
+      )
       .split(":");
 
 
@@ -3985,7 +4186,8 @@ function formatTime(
 
 
   const minute =
-    parts[1] || "00";
+    parts[1] ||
+    "00";
 
 
   const period =
@@ -3995,7 +4197,8 @@ function formatTime(
 
 
   hour =
-    hour % 12 || 12;
+    hour % 12 ||
+    12;
 
 
   return `${hour}:${minute} ${period}`;
@@ -4007,9 +4210,7 @@ function formatTime(
 // الصف
 // =====================================================
 
-function gradeArabic(
-  grade
-) {
+function gradeArabic(grade) {
 
   return {
 
@@ -4023,10 +4224,8 @@ function gradeArabic(
       "الثالث الثانوي"
 
   }[grade] ||
-
-    grade ||
-
-    "—";
+  grade ||
+  "—";
 
 }
 
@@ -4035,9 +4234,7 @@ function gradeArabic(
 // إعدادات الحساب
 // =====================================================
 
-async function saveProfile(
-  e
-) {
+async function saveProfile(e) {
 
   e.preventDefault();
 
@@ -4054,14 +4251,14 @@ async function saveProfile(
             .getElementById(
               "profileName"
             )
-            .value,
+            ?.value || "",
 
         phone:
           document
             .getElementById(
               "profilePhone"
             )
-            .value
+            ?.value || ""
 
       })
       .eq(
@@ -4130,9 +4327,7 @@ async function changePassword() {
 }
 
 
-async function doPassword(
-  e
-) {
+async function doPassword(e) {
 
   e.preventDefault();
 
@@ -4180,7 +4375,10 @@ async function doPassword(
     error
   } =
     await sb.auth.updateUser({
-      password: a
+
+      password:
+        a
+
     });
 
 
@@ -4200,9 +4398,7 @@ async function doPassword(
 // الإشعارات
 // =====================================================
 
-async function sendNotification(
-  e
-) {
+async function sendNotification(e) {
 
   e.preventDefault();
 
@@ -4217,9 +4413,7 @@ async function sendNotification(
 // نماذج مؤقتة
 // =====================================================
 
-function simpleForm(
-  title
-) {
+function simpleForm(title) {
 
   openModal(`
 
@@ -4275,9 +4469,7 @@ async function saveAttendance() {
 // PDF
 // =====================================================
 
-function studentPDF(
-  s
-) {
+function studentPDF(s) {
 
   const html = `
 
@@ -4304,22 +4496,22 @@ function studentPDF(
         }
 
         h1 {
-          text-align: center;
+          text-align:center;
         }
 
         table {
-          width: 100%;
-          border-collapse: collapse;
+          width:100%;
+          border-collapse:collapse;
         }
 
         td {
-          border: 1px solid #ddd;
-          padding: 10px;
+          border:1px solid #ddd;
+          padding:10px;
         }
 
         .h {
-          font-weight: bold;
-          background: #f4f5f8;
+          font-weight:bold;
+          background:#f4f5f8;
         }
 
       </style>
@@ -4346,7 +4538,9 @@ function studentPDF(
 
             [
               "الاسم",
-              s.full_name
+              s.full_name ||
+              s.profiles?.full_name ||
+              ""
             ],
 
             [
@@ -4363,17 +4557,20 @@ function studentPDF(
 
             [
               "الهاتف",
-              s.phone || ""
+              s.phone ||
+              ""
             ],
 
             [
               "ولي الأمر",
-              s.parent_phone || ""
+              s.parent_phone ||
+              ""
             ],
 
             [
               "المجموعة الأساسية",
-              s.groups?.name || "—"
+              s.groups?.name ||
+              "—"
             ],
 
             [
@@ -4385,7 +4582,8 @@ function studentPDF(
 
             [
               "مجموعة الحل",
-              s.solution_group?.name || "—"
+              s.solution_group?.name ||
+              "—"
             ],
 
             [
@@ -4398,13 +4596,11 @@ function studentPDF(
             [
               "وقت الحل",
               s.solution_group
-
                 ? `${formatTime(
                     s.solution_group.start_time
                   )} إلى ${formatTime(
                     s.solution_group.end_time
                   )}`
-
                 : "—"
             ],
 
@@ -4418,7 +4614,8 @@ function studentPDF(
 
             [
               "النقاط",
-              s.points ?? 0
+              s.points ??
+              0
             ]
 
           ]
@@ -4535,7 +4732,7 @@ function applyFont() {
 
 
             document.body.style.fontFamily =
-              "UploadedFont, Arial";
+              "UploadedFont,Arial";
 
 
             alert(
@@ -4559,14 +4756,13 @@ function applyFont() {
 // Modal
 // =====================================================
 
-function openModal(
-  content
-) {
+function openModal(content) {
 
   const modalContent =
     document.getElementById(
       "modalContent"
     );
+
 
   const modal =
     document.getElementById(
@@ -4607,9 +4803,7 @@ function closeModal() {
 // حماية HTML
 // =====================================================
 
-function esc(
-  value
-) {
+function esc(value) {
 
   return String(
     value ?? ""
@@ -4617,11 +4811,20 @@ function esc(
     /[&<>"']/g,
     char => ({
 
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
+      "&":
+        "&amp;",
+
+      "<":
+        "&lt;",
+
+      ">":
+        "&gt;",
+
+      '"':
+        "&quot;",
+
+      "'":
+        "&#039;"
 
     }[char])
   );
@@ -4630,7 +4833,7 @@ function esc(
 
 
 // =====================================================
-// تشغيل
+// تشغيل التطبيق
 // =====================================================
 
 boot();
