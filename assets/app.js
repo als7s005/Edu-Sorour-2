@@ -139,11 +139,12 @@ async function loadProfile() {
   const {
     data,
     error
-  } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .single();
+  } =
+    await sb
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .single();
 
   if (error || !data) {
 
@@ -156,6 +157,7 @@ async function loadProfile() {
     );
 
     return;
+
   }
 
   currentProfile = data;
@@ -179,13 +181,11 @@ function showLogin() {
   const app =
     document.getElementById("app");
 
-  if (loginView) {
+  if (loginView)
     loginView.classList.remove("hidden");
-  }
 
-  if (app) {
+  if (app)
     app.classList.add("hidden");
-  }
 
 }
 
@@ -202,13 +202,11 @@ function showApp() {
   const app =
     document.getElementById("app");
 
-  if (loginView) {
+  if (loginView)
     loginView.classList.add("hidden");
-  }
 
-  if (app) {
+  if (app)
     app.classList.remove("hidden");
-  }
 
   const name =
     currentProfile.full_name || "مستخدم";
@@ -225,24 +223,20 @@ function showApp() {
   const avatar =
     document.getElementById("avatar");
 
-  if (userName) {
+  if (userName)
     userName.textContent = name;
-  }
 
-  if (roleLabel) {
+  if (roleLabel)
     roleLabel.textContent =
       roleArabic(currentProfile.role);
-  }
 
-  if (userMeta) {
+  if (userMeta)
     userMeta.textContent =
       currentProfile.role;
-  }
 
-  if (avatar) {
+  if (avatar)
     avatar.textContent =
       name[0] || "م";
-  }
 
 }
 
@@ -273,8 +267,7 @@ function setLoginMessage(message) {
 
   if (el) {
 
-    el.textContent =
-      message;
+    el.textContent = message;
 
   }
 
@@ -319,14 +312,14 @@ if (loginForm) {
 
       let email = id;
 
-      // إذا كان المستخدم طالبًا وكتب ID
       const {
         data: studentData
-      } = await sb
-        .from("profiles")
-        .select("email")
-        .eq("student_id", id)
-        .maybeSingle();
+      } =
+        await sb
+          .from("profiles")
+          .select("email")
+          .eq("student_id", id)
+          .maybeSingle();
 
       if (studentData?.email) {
 
@@ -402,58 +395,55 @@ function render() {
   const pageSub =
     document.getElementById("pageSub");
 
-  if (pageTitle) {
-
+  if (pageTitle)
     pageTitle.textContent =
       titles[page]?.[0] || "";
 
-  }
-
-  if (pageSub) {
-
+  if (pageSub)
     pageSub.textContent =
       titles[page]?.[1] || "";
-
-  }
 
   const nav =
     document.getElementById("nav");
 
-  if (!nav) return;
+  if (nav) {
 
-  nav.innerHTML =
-    (navByRole[currentProfile.role] || [])
-      .map(
-        item => `
-          <button
-            class="${item[0] === page ? "active" : ""}"
-            data-page="${item[0]}"
-          >
-            ${item[1]}
-          </button>
-        `
-      )
-      .join("");
+    nav.innerHTML =
+      (navByRole[currentProfile.role] || [])
+        .map(
+          item => `
+            <button
+              class="${item[0] === page ? "active" : ""}"
+              data-page="${item[0]}"
+            >
+              ${item[1]}
+            </button>
+          `
+        )
+        .join("");
 
-  nav
-    .querySelectorAll("button")
-    .forEach(button => {
+    nav
+      .querySelectorAll("button")
+      .forEach(button => {
 
-      button.onclick = () => {
+        button.onclick = () => {
 
-        page =
-          button.dataset.page;
+          page =
+            button.dataset.page;
 
-        render();
+          render();
 
-      };
+        };
 
-    });
+      });
+
+  }
 
   const content =
     document.getElementById("content");
 
-  if (!content) return;
+  if (!content)
+    return;
 
   content.innerHTML =
     pageHTML(page);
@@ -529,7 +519,7 @@ function pageHTML(p) {
                 <th>الطالب</th>
                 <th>ID</th>
                 <th>الصف</th>
-                <th>المجموعة</th>
+                <th>المجموعة الأساسية</th>
                 <th>مجموعة الحل</th>
                 <th>الحضور</th>
                 <th>النقاط</th>
@@ -1042,21 +1032,18 @@ function dashboardHTML() {
 
 async function loadStudents() {
 
-  if (!sb) return;
+  if (!sb)
+    return;
 
   /*
-    مهم جدًا:
-
-    عندنا علاقتان بين students و groups:
-
-    1) students.group_id
-       → groups.id
-
-    2) students.solution_group_id
-       → groups.id
-
-    لذلك لازم نحدد الـ Foreign Key صراحة.
-  */
+   * مهم:
+   * عندنا علاقتان بين students و groups
+   *
+   * group_id
+   * solution_group_id
+   *
+   * لذلك يجب تحديد الـ Foreign Key صراحة.
+   */
 
   const {
     data,
@@ -1066,9 +1053,19 @@ async function loadStudents() {
       .from("students")
       .select(`
         *,
-        profiles(full_name),
-        main_group:groups!students_group_id_fkey(name),
-        solution_group:groups!students_solution_group_id_fkey(name)
+        main_group:groups!students_group_id_fkey (
+          id,
+          name
+        ),
+        solution_group:groups!students_solution_group_id_fkey (
+          id,
+          name
+        ),
+        profiles (
+          full_name,
+          email,
+          phone
+        )
       `)
       .order(
         "created_at",
@@ -1077,16 +1074,22 @@ async function loadStudents() {
         }
       );
 
+
   const body =
     document.getElementById(
       "studentBody"
     );
 
-  if (!body) return;
+  if (!body)
+    return;
+
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Students Load Error:",
+      error
+    );
 
     body.innerHTML = `
       <tr>
@@ -1094,16 +1097,20 @@ async function loadStudents() {
           colspan="8"
           class="error"
         >
-          خطأ: ${esc(error.message)}
+          خطأ:
+          ${esc(error.message)}
         </td>
       </tr>
     `;
 
     return;
+
   }
+
 
   let arr =
     data || [];
+
 
   if (
     currentProfile.role === "student"
@@ -1118,6 +1125,7 @@ async function loadStudents() {
 
   }
 
+
   body.innerHTML =
     arr
       .map(
@@ -1131,57 +1139,93 @@ async function loadStudents() {
 
                 <span class="mini">
                   ${
-                    (student.full_name || "?")[0]
+                    (
+                      student.full_name ||
+                      "?"
+                    )[0]
                   }
                 </span>
 
                 <b>
-                  ${esc(student.full_name)}
+                  ${esc(
+                    student.full_name
+                  )}
                 </b>
 
               </div>
 
             </td>
 
-            <td>
-              ${esc(student.student_id)}
-            </td>
-
-            <td>
-              ${esc(student.grade || "")}
-            </td>
 
             <td>
               ${esc(
-                student.main_group?.name ||
-                "—"
+                student.student_id
               )}
             </td>
+
 
             <td>
               ${esc(
-                student.solution_group?.name ||
-                "—"
+                student.grade || ""
               )}
             </td>
 
+
             <td>
-              ${student.attendance_percent ?? 0}%
+
+              ${
+                esc(
+                  student.main_group?.name ||
+                  "—"
+                )
+              }
+
             </td>
+
+
+            <td>
+
+              ${
+                esc(
+                  student.solution_group?.name ||
+                  "—"
+                )
+              }
+
+            </td>
+
+
+            <td>
+
+              ${
+                student.attendance_percent ??
+                0
+              }%
+
+            </td>
+
 
             <td>
 
               <span class="badge orange">
-                ${student.points ?? 0}
+
+                ${
+                  student.points ??
+                  0
+                }
+
               </span>
 
             </td>
+
 
             <td>
 
               <button
                 class="btn secondary"
-                onclick='studentPDF(${JSON.stringify(student)})'
+                onclick='studentPDF(${JSON.stringify(
+                  student
+                )})'
               >
                 PDF
               </button>
@@ -1196,12 +1240,14 @@ async function loadStudents() {
       ||
       `
         <tr>
+
           <td
             colspan="8"
             class="empty"
           >
             لا توجد بيانات
           </td>
+
         </tr>
       `;
 
@@ -1210,6 +1256,7 @@ async function loadStudents() {
     document.getElementById(
       "studentSearch"
     );
+
 
   if (input) {
 
@@ -1220,6 +1267,7 @@ async function loadStudents() {
           .trim()
           .toLowerCase();
 
+
       [
         ...body.rows
       ].forEach(row => {
@@ -1228,8 +1276,8 @@ async function loadStudents() {
           row.innerText
             .toLowerCase()
             .includes(q)
-            ? ""
-            : "none";
+              ? ""
+              : "none";
 
       });
 
@@ -1252,12 +1300,14 @@ function addStudent() {
       إضافة طالب جديد
     </h2>
 
+
     <form
       class="form"
       onsubmit="createStudent(event)"
     >
 
       <div class="form-grid">
+
 
         <label>
 
@@ -1323,11 +1373,23 @@ function addStudent() {
 
         <label>
 
-          المجموعة
+          المجموعة الأساسية
 
           <input
             id="sgrp"
-            placeholder="اتركها فارغة حاليًا"
+            placeholder="ID المجموعة"
+          >
+
+        </label>
+
+
+        <label>
+
+          مجموعة الحل
+
+          <input
+            id="ssgrp"
+            placeholder="ID مجموعة الحل"
           >
 
         </label>
@@ -1342,6 +1404,7 @@ function addStudent() {
           >
 
         </label>
+
 
       </div>
 
@@ -1367,6 +1430,7 @@ function addStudent() {
 
       </button>
 
+
     </form>
 
   `);
@@ -1375,12 +1439,13 @@ function addStudent() {
 
 
 // =====================================================
-// إنشاء الطالب عن طريق Edge Function
+// إنشاء الطالب
 // =====================================================
 
 async function createStudent(e) {
 
   e.preventDefault();
+
 
   if (!sb || !currentUser) {
 
@@ -1399,11 +1464,13 @@ async function createStudent(e) {
       .value
       .trim();
 
+
   const phone =
     document
       .getElementById("sp")
       .value
       .trim();
+
 
   const parentPhone =
     document
@@ -1411,16 +1478,26 @@ async function createStudent(e) {
       .value
       .trim();
 
+
   const grade =
     document
       .getElementById("sg")
       .value;
+
 
   const groupId =
     document
       .getElementById("sgrp")
       .value
       .trim();
+
+
+  const solutionGroupId =
+    document
+      .getElementById("ssgrp")
+      .value
+      .trim();
+
 
   const seatNumber =
     document
@@ -1486,6 +1563,7 @@ async function createStudent(e) {
   const form =
     e.target;
 
+
   const button =
     form.querySelector(
       'button[type="submit"]'
@@ -1529,30 +1607,31 @@ async function createStudent(e) {
 
           },
 
-          body: JSON.stringify({
+          body:
+            JSON.stringify({
 
-            full_name:
-              fullName,
+              full_name:
+                fullName,
 
-            phone:
-              phone,
+              phone:
+                phone,
 
-            parent_phone:
-              parentPhone,
+              parent_phone:
+                parentPhone,
 
-            grade:
-              grade,
+              grade:
+                grade,
 
-            group_id:
-              null,
+              group_id:
+                groupId || null,
 
-            solution_group_id:
-              null,
+              solution_group_id:
+                solutionGroupId || null,
 
-            seat_number:
-              seatNumber
+              seat_number:
+                seatNumber
 
-          })
+            })
 
         }
       );
@@ -1584,11 +1663,14 @@ async function createStudent(e) {
 
     openModal(`
 
-      <div style="text-align:center">
+      <div
+        style="text-align:center"
+      >
 
         <h2>
           ✅ تم إنشاء الطالب بنجاح
         </h2>
+
 
         <div
           class="notice"
@@ -1601,7 +1683,9 @@ async function createStudent(e) {
               اسم الطالب:
             </strong>
 
-            ${esc(student.name)}
+            ${esc(
+              student.name
+            )}
 
           </p>
 
@@ -1612,7 +1696,9 @@ async function createStudent(e) {
               ID الطالب:
             </strong>
 
-            ${esc(student.student_id)}
+            ${esc(
+              student.student_id
+            )}
 
           </p>
 
@@ -1623,9 +1709,12 @@ async function createStudent(e) {
               كلمة المرور:
             </strong>
 
-            ${esc(student.password)}
+            ${esc(
+              student.password
+            )}
 
           </p>
+
 
         </div>
 
@@ -1651,6 +1740,7 @@ async function createStudent(e) {
           تم
 
         </button>
+
 
       </div>
 
@@ -1694,6 +1784,7 @@ async function saveProfile(e) {
 
   e.preventDefault();
 
+
   const {
     error
   } =
@@ -1703,12 +1794,16 @@ async function saveProfile(e) {
 
         full_name:
           document
-            .getElementById("profileName")
+            .getElementById(
+              "profileName"
+            )
             .value,
 
         phone:
           document
-            .getElementById("profilePhone")
+            .getElementById(
+              "profilePhone"
+            )
             .value
 
       })
@@ -1746,6 +1841,7 @@ async function changePassword() {
       تغيير كلمة المرور
     </h2>
 
+
     <form
       class="form"
       onsubmit="doPassword(event)"
@@ -1759,6 +1855,7 @@ async function changePassword() {
         required
       >
 
+
       <input
         id="newPass2"
         type="password"
@@ -1767,9 +1864,11 @@ async function changePassword() {
         required
       >
 
+
       <button class="btn">
         تحديث
       </button>
+
 
     </form>
 
@@ -1781,6 +1880,7 @@ async function changePassword() {
 async function doPassword(e) {
 
   e.preventDefault();
+
 
   if (
     currentProfile.role === "student"
@@ -1797,12 +1897,17 @@ async function doPassword(e) {
 
   const a =
     document
-      .getElementById("newPass")
+      .getElementById(
+        "newPass"
+      )
       .value;
+
 
   const b =
     document
-      .getElementById("newPass2")
+      .getElementById(
+        "newPass2"
+      )
       .value;
 
 
@@ -1867,6 +1972,7 @@ function simpleForm(title) {
       إضافة ${title}
     </h2>
 
+
     <form
       class="form"
       onsubmit="event.preventDefault();closeModal()"
@@ -1877,13 +1983,18 @@ function simpleForm(title) {
         required
       >
 
+
       <textarea
         placeholder="التفاصيل"
       ></textarea>
 
+
       <button class="btn">
+
         حفظ
+
       </button>
+
 
     </form>
 
@@ -1915,7 +2026,10 @@ function studentPDF(s) {
 
     <!doctype html>
 
-    <html lang="ar" dir="rtl">
+    <html
+      lang="ar"
+      dir="rtl"
+    >
 
     <head>
 
@@ -1924,6 +2038,7 @@ function studentPDF(s) {
       <title>
         بيان الطالب
       </title>
+
 
       <style>
 
@@ -1955,48 +2070,78 @@ function studentPDF(s) {
 
     </head>
 
+
     <body>
 
       <h1>
         بيان الطالب
       </h1>
 
+
       <p style="text-align:center">
         EduCenter
       </p>
 
+
       <table>
+
 
         ${
           [
-            ["الاسم", s.full_name],
-            ["ID", s.student_id],
-            ["الصف", s.grade],
             [
-              "المجموعة",
+              "الاسم",
+              s.full_name
+            ],
+
+            [
+              "ID",
+              s.student_id
+            ],
+
+            [
+              "الصف",
+              s.grade
+            ],
+
+            [
+              "المجموعة الأساسية",
               s.main_group?.name || ""
             ],
+
             [
               "مجموعة الحل",
               s.solution_group?.name || ""
             ],
-            ["الهاتف", s.phone || ""],
-            ["ولي الأمر", s.parent_phone || ""],
+
+            [
+              "الهاتف",
+              s.phone || ""
+            ],
+
+            [
+              "ولي الأمر",
+              s.parent_phone || ""
+            ],
+
             [
               "نسبة الحضور",
-              (s.attendance_percent ?? 0) + "%"
+              (s.attendance_percent ?? 0) +
+              "%"
             ],
+
             [
               "النقاط",
               s.points ?? 0
             ]
+
           ]
             .map(
               x => `
+
                 <tr>
 
                   <td class="h">
-                    ${x[0]}
+                    ${esc(x[0])}
                   </td>
 
                   <td>
@@ -2004,16 +2149,23 @@ function studentPDF(s) {
                   </td>
 
                 </tr>
+
               `
             )
             .join("")
+
         }
+
 
       </table>
 
+
       <script>
+
         window.print();
+
       <\/script>
+
 
     </body>
 
@@ -2040,7 +2192,9 @@ function studentPDF(s) {
   }
 
 
-  w.document.write(html);
+  w.document.write(
+    html
+  );
 
   w.document.close();
 
@@ -2055,7 +2209,9 @@ function applyFont() {
 
   const file =
     document
-      .getElementById("fontFile")
+      .getElementById(
+        "fontFile"
+      )
       ?.files[0];
 
 
@@ -2086,25 +2242,30 @@ function applyFont() {
 
       font
         .load()
-        .then(loaded => {
+        .then(
+          loaded => {
 
-          document.fonts.add(
-            loaded
-          );
+            document.fonts.add(
+              loaded
+            );
 
-          document.body.style.fontFamily =
-            "UploadedFont,Arial";
+            document.body.style.fontFamily =
+              "UploadedFont,Arial";
 
-          alert(
-            "تم تطبيق الخط على الجلسة الحالية."
-          );
 
-        });
+            alert(
+              "تم تطبيق الخط على الجلسة الحالية."
+            );
+
+          }
+        );
 
     };
 
 
-  reader.readAsArrayBuffer(file);
+  reader.readAsArrayBuffer(
+    file
+  );
 
 }
 
@@ -2125,19 +2286,16 @@ function openModal(content) {
       "modal"
     );
 
-  if (modalContent) {
 
+  if (modalContent)
     modalContent.innerHTML =
       content;
 
-  }
 
-  if (modal) {
-
-    modal.classList
-      .remove("hidden");
-
-  }
+  if (modal)
+    modal.classList.remove(
+      "hidden"
+    );
 
 }
 
@@ -2149,12 +2307,11 @@ function closeModal() {
       "modal"
     );
 
-  if (modal) {
 
-    modal.classList
-      .add("hidden");
-
-  }
+  if (modal)
+    modal.classList.add(
+      "hidden"
+    );
 
 }
 
