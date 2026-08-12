@@ -133,18 +133,16 @@ async function loadProfile() {
     showLogin();
 
     return;
-
   }
 
   const {
     data,
     error
-  } =
-    await sb
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .single();
+  } = await sb
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .single();
 
   if (error || !data) {
 
@@ -157,7 +155,6 @@ async function loadProfile() {
     );
 
     return;
-
   }
 
   currentProfile = data;
@@ -165,7 +162,6 @@ async function loadProfile() {
   showApp();
 
   render();
-
 }
 
 
@@ -175,18 +171,13 @@ async function loadProfile() {
 
 function showLogin() {
 
-  const loginView =
-    document.getElementById("loginView");
+  document
+    .getElementById("loginView")
+    ?.classList.remove("hidden");
 
-  const app =
-    document.getElementById("app");
-
-  if (loginView)
-    loginView.classList.remove("hidden");
-
-  if (app)
-    app.classList.add("hidden");
-
+  document
+    .getElementById("app")
+    ?.classList.add("hidden");
 }
 
 
@@ -196,20 +187,16 @@ function showLogin() {
 
 function showApp() {
 
-  const loginView =
-    document.getElementById("loginView");
+  document
+    .getElementById("loginView")
+    ?.classList.add("hidden");
 
-  const app =
-    document.getElementById("app");
-
-  if (loginView)
-    loginView.classList.add("hidden");
-
-  if (app)
-    app.classList.remove("hidden");
+  document
+    .getElementById("app")
+    ?.classList.remove("hidden");
 
   const name =
-    currentProfile.full_name || "مستخدم";
+    currentProfile?.full_name || "مستخدم";
 
   const userName =
     document.getElementById("userName");
@@ -237,7 +224,6 @@ function showApp() {
   if (avatar)
     avatar.textContent =
       name[0] || "م";
-
 }
 
 
@@ -267,7 +253,8 @@ function setLoginMessage(message) {
 
   if (el) {
 
-    el.textContent = message;
+    el.textContent =
+      message;
 
   }
 
@@ -296,7 +283,6 @@ if (loginForm) {
         );
 
         return;
-
       }
 
       const id =
@@ -314,12 +300,11 @@ if (loginForm) {
 
       const {
         data: studentData
-      } =
-        await sb
-          .from("profiles")
-          .select("email")
-          .eq("student_id", id)
-          .maybeSingle();
+      } = await sb
+        .from("profiles")
+        .select("email")
+        .eq("student_id", id)
+        .maybeSingle();
 
       if (studentData?.email) {
 
@@ -346,7 +331,6 @@ if (loginForm) {
         );
 
         return;
-
       }
 
       currentUser =
@@ -364,12 +348,12 @@ if (loginForm) {
 // تسجيل الخروج
 // =====================================================
 
-const logoutButton =
+const logoutBtn =
   document.getElementById("logout");
 
-if (logoutButton) {
+if (logoutBtn) {
 
-  logoutButton.onclick =
+  logoutBtn.onclick =
     async () => {
 
       if (sb) {
@@ -448,11 +432,11 @@ function render() {
   content.innerHTML =
     pageHTML(page);
 
-  if (page === "students") {
-
+  if (page === "students")
     loadStudents();
 
-  }
+  if (page === "groups")
+    loadGroups();
 
 }
 
@@ -463,6 +447,10 @@ function render() {
 
 function pageHTML(p) {
 
+  // ---------------------------------------------------
+  // Dashboard
+  // ---------------------------------------------------
+
   if (p === "dashboard") {
 
     return dashboardHTML();
@@ -470,9 +458,14 @@ function pageHTML(p) {
   }
 
 
+  // ---------------------------------------------------
+  // الطلاب
+  // ---------------------------------------------------
+
   if (p === "students") {
 
     return `
+
       <div class="card">
 
         <div class="section-head">
@@ -516,14 +509,23 @@ function pageHTML(p) {
             <thead>
 
               <tr>
+
                 <th>الطالب</th>
+
                 <th>ID</th>
+
                 <th>الصف</th>
+
                 <th>المجموعة الأساسية</th>
+
                 <th>مجموعة الحل</th>
+
                 <th>الحضور</th>
+
                 <th>النقاط</th>
+
                 <th></th>
+
               </tr>
 
             </thead>
@@ -531,12 +533,14 @@ function pageHTML(p) {
             <tbody id="studentBody">
 
               <tr>
+
                 <td
                   colspan="8"
                   class="empty"
                 >
                   جاري التحميل...
                 </td>
+
               </tr>
 
             </tbody>
@@ -546,14 +550,20 @@ function pageHTML(p) {
         </div>
 
       </div>
+
     `;
 
   }
 
 
+  // ---------------------------------------------------
+  // المعلمين
+  // ---------------------------------------------------
+
   if (p === "teachers") {
 
     return `
+
       <div class="card">
 
         <div class="section-head">
@@ -577,45 +587,86 @@ function pageHTML(p) {
         </div>
 
       </div>
+
     `;
 
   }
 
+
+  // ---------------------------------------------------
+  // المجموعات
+  // ---------------------------------------------------
 
   if (p === "groups") {
 
     return `
-      <div class="card">
 
-        <div class="section-head">
+      <div class="grid2">
 
-          <h2>المجموعات</h2>
+        <div class="card">
 
-          <button
-            class="btn"
-            onclick="simpleForm('مجموعة')"
+          <div class="section-head">
+
+            <h2>المجموعات الأساسية</h2>
+
+            <button
+              class="btn"
+              onclick="addGroup('main')"
+            >
+              + إضافة مجموعة
+            </button>
+
+          </div>
+
+          <div
+            id="groupList"
+            class="empty"
           >
-            + إضافة مجموعة
-          </button>
+            جاري التحميل...
+          </div>
 
         </div>
 
-        <div
-          id="groupList"
-          class="empty"
-        >
-          جاري التحميل...
+
+        <div class="card">
+
+          <div class="section-head">
+
+            <h2>مجموعات الحل</h2>
+
+            <button
+              class="btn"
+              onclick="addGroup('solution')"
+            >
+              + إضافة مجموعة حل
+            </button>
+
+          </div>
+
+          <div
+            id="solutionGroupList"
+            class="empty"
+          >
+            جاري التحميل...
+          </div>
+
         </div>
 
       </div>
+
     `;
 
   }
 
 
+  // ---------------------------------------------------
+  // الحضور
+  // ---------------------------------------------------
+
   if (p === "attendance") {
 
     return `
+
       <div class="card">
 
         <div class="section-head">
@@ -633,7 +684,8 @@ function pageHTML(p) {
 
         <div class="notice">
 
-          تسجيل ومتابعة حضور الطلاب.
+          يتم تسجيل حضور وغياب الطالب
+          حسب أيام مجموعته الأساسية.
 
         </div>
 
@@ -645,14 +697,20 @@ function pageHTML(p) {
         </div>
 
       </div>
+
     `;
 
   }
 
 
+  // ---------------------------------------------------
+  // الامتحانات
+  // ---------------------------------------------------
+
   if (p === "exams") {
 
     return `
+
       <div class="card">
 
         <div class="section-head">
@@ -676,14 +734,20 @@ function pageHTML(p) {
         </div>
 
       </div>
+
     `;
 
   }
 
 
+  // ---------------------------------------------------
+  // المحادثات
+  // ---------------------------------------------------
+
   if (p === "messages") {
 
     return `
+
       <div class="grid2">
 
         <div class="card">
@@ -713,14 +777,20 @@ function pageHTML(p) {
         </div>
 
       </div>
+
     `;
 
   }
 
 
+  // ---------------------------------------------------
+  // الإشعارات
+  // ---------------------------------------------------
+
   if (p === "notifications") {
 
     return `
+
       <div class="card">
 
         <h2>إرسال إشعار</h2>
@@ -731,6 +801,7 @@ function pageHTML(p) {
         >
 
           <label>
+
             المستلم
 
             <select id="notifyTo">
@@ -775,17 +846,24 @@ function pageHTML(p) {
         </form>
 
       </div>
+
     `;
 
   }
 
 
+  // ---------------------------------------------------
+  // التقارير
+  // ---------------------------------------------------
+
   if (p === "reports") {
 
     return `
+
       <div class="stats">
 
         <div class="card">
+
           <span class="kpi">
             متوسط الحضور
           </span>
@@ -793,9 +871,11 @@ function pageHTML(p) {
           <strong id="rAttendance">
             —
           </strong>
+
         </div>
 
         <div class="card">
+
           <span class="kpi">
             متوسط الامتحانات
           </span>
@@ -803,9 +883,11 @@ function pageHTML(p) {
           <strong id="rExam">
             —
           </strong>
+
         </div>
 
         <div class="card">
+
           <span class="kpi">
             إجمالي النقاط
           </span>
@@ -813,9 +895,11 @@ function pageHTML(p) {
           <strong id="rPoints">
             —
           </strong>
+
         </div>
 
         <div class="card">
+
           <span class="kpi">
             تقييم الشهر
           </span>
@@ -823,6 +907,7 @@ function pageHTML(p) {
           <strong id="rMonth">
             —
           </strong>
+
         </div>
 
       </div>
@@ -836,14 +921,20 @@ function pageHTML(p) {
         </p>
 
       </div>
+
     `;
 
   }
 
 
+  // ---------------------------------------------------
+  // الإعدادات
+  // ---------------------------------------------------
+
   if (p === "settings") {
 
     return `
+
       <div class="grid2">
 
         <div class="card">
@@ -898,6 +989,7 @@ function pageHTML(p) {
         </div>
 
       </div>
+
     `;
 
   }
@@ -912,6 +1004,7 @@ function pageHTML(p) {
 function dashboardHTML() {
 
   return `
+
     <div class="stats">
 
       <div class="card stat">
@@ -926,7 +1019,9 @@ function dashboardHTML() {
             }
           </small>
 
-          <strong id="d1">—</strong>
+          <strong id="d1">
+            —
+          </strong>
 
         </div>
 
@@ -1021,13 +1116,14 @@ function dashboardHTML() {
       </p>
 
     </div>
+
   `;
 
 }
 
 
 // =====================================================
-// الطلاب
+// تحميل الطلاب
 // =====================================================
 
 async function loadStudents() {
@@ -1036,14 +1132,17 @@ async function loadStudents() {
     return;
 
   /*
-   * مهم:
-   * عندنا علاقتان بين students و groups
-   *
-   * group_id
-   * solution_group_id
-   *
-   * لذلك يجب تحديد الـ Foreign Key صراحة.
-   */
+    مهم جدًا:
+
+    عند وجود علاقتين بين students و groups
+    لازم نحدد اسم الـ FK صراحة.
+
+    group_id
+      -> students_group_id_fkey
+
+    solution_group_id
+      -> students_solution_group_id_fkey
+  */
 
   const {
     data,
@@ -1053,18 +1152,28 @@ async function loadStudents() {
       .from("students")
       .select(`
         *,
-        main_group:groups!students_group_id_fkey (
+        groups!students_group_id_fkey(
           id,
-          name
+          name,
+          grade,
+          day1,
+          day2,
+          start_time,
+          duration_minutes
         ),
-        solution_group:groups!students_solution_group_id_fkey (
+        solution_group:groups!students_solution_group_id_fkey(
           id,
-          name
+          name,
+          grade,
+          day1,
+          day2,
+          day3,
+          start_time,
+          end_time,
+          duration_minutes
         ),
-        profiles (
-          full_name,
-          email,
-          phone
+        profiles(
+          full_name
         )
       `)
       .order(
@@ -1074,7 +1183,6 @@ async function loadStudents() {
         }
       );
 
-
   const body =
     document.getElementById(
       "studentBody"
@@ -1083,37 +1191,37 @@ async function loadStudents() {
   if (!body)
     return;
 
-
   if (error) {
 
-    console.error(
-      "Students Load Error:",
-      error
-    );
+    console.error(error);
 
     body.innerHTML = `
+
       <tr>
+
         <td
           colspan="8"
           class="error"
         >
+
           خطأ:
           ${esc(error.message)}
+
         </td>
+
       </tr>
+
     `;
 
     return;
-
   }
-
 
   let arr =
     data || [];
 
-
   if (
-    currentProfile.role === "student"
+    currentProfile.role ===
+    "student"
   ) {
 
     arr =
@@ -1124,7 +1232,6 @@ async function loadStudents() {
       );
 
   }
-
 
   body.innerHTML =
     arr
@@ -1138,18 +1245,22 @@ async function loadStudents() {
               <div class="student-row">
 
                 <span class="mini">
+
                   ${
                     (
                       student.full_name ||
                       "?"
                     )[0]
                   }
+
                 </span>
 
                 <b>
+
                   ${esc(
                     student.full_name
                   )}
+
                 </b>
 
               </div>
@@ -1158,39 +1269,122 @@ async function loadStudents() {
 
 
             <td>
+
               ${esc(
                 student.student_id
               )}
+
             </td>
 
 
             <td>
+
               ${esc(
-                student.grade || ""
+                student.grade ||
+                ""
               )}
-            </td>
-
-
-            <td>
-
-              ${
-                esc(
-                  student.main_group?.name ||
-                  "—"
-                )
-              }
 
             </td>
 
 
             <td>
 
-              ${
-                esc(
-                  student.solution_group?.name ||
-                  "—"
-                )
-              }
+              <div>
+
+                <b>
+
+                  ${
+                    esc(
+                      student.groups?.name ||
+                      "—"
+                    )
+                  }
+
+                </b>
+
+                ${
+                  student.groups
+                    ? `
+                      <small
+                        style="
+                          display:block;
+                          color:#718096;
+                          margin-top:4px
+                        "
+                      >
+
+                        ${formatGroupDays(
+                          student.groups
+                        )}
+
+                        ${
+                          student.groups.start_time
+                            ? `
+                              -
+                              ${formatTime(
+                                student.groups.start_time
+                              )}
+                            `
+                            : ""
+                        }
+
+                      </small>
+                    `
+                    : ""
+                }
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <div>
+
+                <b>
+
+                  ${
+                    esc(
+                      student.solution_group?.name ||
+                      "—"
+                    )
+                  }
+
+                </b>
+
+                ${
+                  student.solution_group
+                    ? `
+                      <small
+                        style="
+                          display:block;
+                          color:#718096;
+                          margin-top:4px
+                        "
+                      >
+
+                        ${formatSolutionDays(
+                          student.solution_group
+                        )}
+
+                        ${
+                          student.solution_group.start_time
+                            ? `
+                              -
+                              ${formatTime(
+                                student.solution_group.start_time
+                              )}
+                            `
+                            : ""
+                        }
+
+                      </small>
+                    `
+                    : ""
+                }
+
+              </div>
 
             </td>
 
@@ -1227,7 +1421,9 @@ async function loadStudents() {
                   student
                 )})'
               >
+
                 PDF
+
               </button>
 
             </td>
@@ -1239,16 +1435,20 @@ async function loadStudents() {
       .join("")
       ||
       `
+
         <tr>
 
           <td
             colspan="8"
             class="empty"
           >
+
             لا توجد بيانات
+
           </td>
 
         </tr>
+
       `;
 
 
@@ -1256,7 +1456,6 @@ async function loadStudents() {
     document.getElementById(
       "studentSearch"
     );
-
 
   if (input) {
 
@@ -1267,7 +1466,6 @@ async function loadStudents() {
           .trim()
           .toLowerCase();
 
-
       [
         ...body.rows
       ].forEach(row => {
@@ -1276,8 +1474,8 @@ async function loadStudents() {
           row.innerText
             .toLowerCase()
             .includes(q)
-              ? ""
-              : "none";
+            ? ""
+            : "none";
 
       });
 
@@ -1292,7 +1490,55 @@ async function loadStudents() {
 // إضافة طالب
 // =====================================================
 
-function addStudent() {
+async function addStudent() {
+
+  if (!sb)
+    return;
+
+
+  // تحميل المجموعات الأساسية
+  const {
+    data: groups,
+    error: groupsError
+  } =
+    await sb
+      .from("groups")
+      .select("*")
+      .eq("type", "main")
+      .order("name");
+
+
+  // تحميل مجموعات الحل
+  const {
+    data: solutionGroups,
+    error: solutionError
+  } =
+    await sb
+      .from("groups")
+      .select("*")
+      .eq("type", "solution")
+      .order("name");
+
+
+  if (groupsError) {
+
+    console.error(groupsError);
+
+  }
+
+  if (solutionError) {
+
+    console.error(solutionError);
+
+  }
+
+
+  const mainGroups =
+    groups || [];
+
+  const solGroups =
+    solutionGroups || [];
+
 
   openModal(`
 
@@ -1375,10 +1621,50 @@ function addStudent() {
 
           المجموعة الأساسية
 
-          <input
+          <select
             id="sgrp"
-            placeholder="ID المجموعة"
+            required
           >
+
+            <option value="">
+              اختر المجموعة
+            </option>
+
+            ${
+              mainGroups
+                .map(
+                  group => `
+                    <option value="${esc(
+                      group.id
+                    )}">
+
+                      ${esc(
+                        group.name
+                      )}
+
+                      -
+                      ${formatGroupDays(
+                        group
+                      )}
+
+                      ${
+                        group.start_time
+                          ? `
+                            -
+                            ${formatTime(
+                              group.start_time
+                            )}
+                          `
+                          : ""
+                      }
+
+                    </option>
+                  `
+                )
+                .join("")
+            }
+
+          </select>
 
         </label>
 
@@ -1387,10 +1673,50 @@ function addStudent() {
 
           مجموعة الحل
 
-          <input
-            id="ssgrp"
-            placeholder="ID مجموعة الحل"
+          <select
+            id="ssolution"
+            required
           >
+
+            <option value="">
+              اختر مجموعة الحل
+            </option>
+
+            ${
+              solGroups
+                .map(
+                  group => `
+                    <option value="${esc(
+                      group.id
+                    )}">
+
+                      ${esc(
+                        group.name
+                      )}
+
+                      -
+                      ${formatSolutionDays(
+                        group
+                      )}
+
+                      ${
+                        group.start_time
+                          ? `
+                            -
+                            ${formatTime(
+                              group.start_time
+                            )}
+                          `
+                          : ""
+                      }
+
+                    </option>
+                  `
+                )
+                .join("")
+            }
+
+          </select>
 
         </label>
 
@@ -1405,7 +1731,6 @@ function addStudent() {
 
         </label>
 
-
       </div>
 
 
@@ -1418,6 +1743,11 @@ function addStudent() {
         كلمة المرور الافتراضية =
         آخر 6 أرقام من هاتف الطالب.
 
+        <br>
+
+        يجب اختيار المجموعة الأساسية
+        ومجموعة الحل.
+
       </div>
 
 
@@ -1429,7 +1759,6 @@ function addStudent() {
         حفظ الطالب
 
       </button>
-
 
     </form>
 
@@ -1446,7 +1775,6 @@ async function createStudent(e) {
 
   e.preventDefault();
 
-
   if (!sb || !currentUser) {
 
     alert(
@@ -1454,7 +1782,6 @@ async function createStudent(e) {
     );
 
     return;
-
   }
 
 
@@ -1488,15 +1815,13 @@ async function createStudent(e) {
   const groupId =
     document
       .getElementById("sgrp")
-      .value
-      .trim();
+      .value;
 
 
   const solutionGroupId =
     document
-      .getElementById("ssgrp")
-      .value
-      .trim();
+      .getElementById("ssolution")
+      .value;
 
 
   const seatNumber =
@@ -1513,7 +1838,6 @@ async function createStudent(e) {
     );
 
     return;
-
   }
 
 
@@ -1524,7 +1848,6 @@ async function createStudent(e) {
     );
 
     return;
-
   }
 
 
@@ -1535,6 +1858,74 @@ async function createStudent(e) {
     );
 
     return;
+  }
+
+
+  if (!groupId) {
+
+    alert(
+      "يجب اختيار المجموعة الأساسية."
+    );
+
+    return;
+  }
+
+
+  if (!solutionGroupId) {
+
+    alert(
+      "يجب اختيار مجموعة الحل."
+    );
+
+    return;
+  }
+
+
+  // منع تكرار رقم الطالب
+  const {
+    data: existingStudent
+  } =
+    await sb
+      .from("students")
+      .select("id")
+      .eq("phone", phone)
+      .maybeSingle();
+
+
+  if (existingStudent) {
+
+    alert(
+      "رقم هاتف الطالب مسجل بالفعل."
+    );
+
+    return;
+  }
+
+
+  // منع تكرار رقم ولي الأمر مع طالب آخر
+  if (parentPhone) {
+
+    const {
+      data: existingParent
+    } =
+      await sb
+        .from("students")
+        .select("id")
+        .eq(
+          "parent_phone",
+          parentPhone
+        )
+        .maybeSingle();
+
+
+    if (existingParent) {
+
+      alert(
+        "رقم هاتف ولي الأمر مسجل بالفعل لطالب آخر."
+      );
+
+      return;
+    }
 
   }
 
@@ -1556,7 +1947,6 @@ async function createStudent(e) {
     );
 
     return;
-
   }
 
 
@@ -1578,7 +1968,8 @@ async function createStudent(e) {
 
   if (button) {
 
-    button.disabled = true;
+    button.disabled =
+      true;
 
     button.textContent =
       "جاري إنشاء الطالب...";
@@ -1607,31 +1998,30 @@ async function createStudent(e) {
 
           },
 
-          body:
-            JSON.stringify({
+          body: JSON.stringify({
 
-              full_name:
-                fullName,
+            full_name:
+              fullName,
 
-              phone:
-                phone,
+            phone:
+              phone,
 
-              parent_phone:
-                parentPhone,
+            parent_phone:
+              parentPhone,
 
-              grade:
-                grade,
+            grade:
+              grade,
 
-              group_id:
-                groupId || null,
+            group_id:
+              groupId,
 
-              solution_group_id:
-                solutionGroupId || null,
+            solution_group_id:
+              solutionGroupId,
 
-              seat_number:
-                seatNumber
+            seat_number:
+              seatNumber
 
-            })
+          })
 
         }
       );
@@ -1663,9 +2053,7 @@ async function createStudent(e) {
 
     openModal(`
 
-      <div
-        style="text-align:center"
-      >
+      <div style="text-align:center">
 
         <h2>
           ✅ تم إنشاء الطالب بنجاح
@@ -1715,7 +2103,6 @@ async function createStudent(e) {
 
           </p>
 
-
         </div>
 
 
@@ -1741,7 +2128,6 @@ async function createStudent(e) {
 
         </button>
 
-
       </div>
 
     `);
@@ -1764,7 +2150,8 @@ async function createStudent(e) {
 
     if (button) {
 
-      button.disabled = false;
+      button.disabled =
+        false;
 
       button.textContent =
         oldText;
@@ -1772,6 +2159,1299 @@ async function createStudent(e) {
     }
 
   }
+
+}
+
+
+// =====================================================
+// المجموعات
+// =====================================================
+
+async function loadGroups() {
+
+  if (!sb)
+    return;
+
+
+  const {
+    data,
+    error
+  } =
+    await sb
+      .from("groups")
+      .select("*")
+      .order("created_at", {
+        ascending: false
+      });
+
+
+  const mainList =
+    document.getElementById(
+      "groupList"
+    );
+
+  const solutionList =
+    document.getElementById(
+      "solutionGroupList"
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    const msg =
+      `خطأ: ${esc(
+        error.message
+      )}`;
+
+    if (mainList)
+      mainList.innerHTML =
+        `<div class="error">${msg}</div>`;
+
+    if (solutionList)
+      solutionList.innerHTML =
+        `<div class="error">${msg}</div>`;
+
+    return;
+  }
+
+
+  const mainGroups =
+    (data || []).filter(
+      group =>
+        !group.type ||
+        group.type === "main"
+    );
+
+
+  const solutionGroups =
+    (data || []).filter(
+      group =>
+        group.type === "solution"
+    );
+
+
+  if (mainList) {
+
+    mainList.innerHTML =
+      mainGroups.length
+        ? mainGroups
+            .map(
+              group =>
+                groupCardHTML(
+                  group,
+                  false
+                )
+            )
+            .join("")
+        : `
+          <div class="empty">
+            لا توجد مجموعات أساسية.
+          </div>
+        `;
+
+  }
+
+
+  if (solutionList) {
+
+    solutionList.innerHTML =
+      solutionGroups.length
+        ? solutionGroups
+            .map(
+              group =>
+                groupCardHTML(
+                  group,
+                  true
+                )
+            )
+            .join("")
+        : `
+          <div class="empty">
+            لا توجد مجموعات حل.
+          </div>
+        `;
+
+  }
+
+}
+
+
+// =====================================================
+// بطاقة المجموعة
+// =====================================================
+
+function groupCardHTML(
+  group,
+  isSolution
+) {
+
+  return `
+
+    <div
+      class="card"
+      style="margin-bottom:12px"
+    >
+
+      <div class="section-head">
+
+        <div>
+
+          <h3>
+
+            ${esc(
+              group.name ||
+              "مجموعة بدون اسم"
+            )}
+
+          </h3>
+
+          <small>
+
+            ${
+              isSolution
+                ? "مجموعة حل"
+                : "مجموعة أساسية"
+            }
+
+          </small>
+
+        </div>
+
+
+        ${
+          currentProfile.role ===
+          "admin"
+            ? `
+              <button
+                class="btn secondary"
+                onclick='editGroup(${JSON.stringify(
+                  group
+                )})'
+              >
+                تعديل
+              </button>
+            `
+            : ""
+        }
+
+      </div>
+
+
+      <p>
+
+        الصف:
+        ${gradeArabic(
+          group.grade
+        )}
+
+      </p>
+
+
+      <p>
+
+        الأيام:
+
+        ${
+          isSolution
+            ? formatSolutionDays(
+                group
+              )
+            : formatGroupDays(
+                group
+              )
+        }
+
+      </p>
+
+
+      <p>
+
+        الموعد:
+
+        ${
+          group.start_time
+            ? formatTime(
+                group.start_time
+              )
+            : "—"
+        }
+
+        ${
+          group.end_time
+            ? `
+              إلى
+              ${formatTime(
+                group.end_time
+              )}
+            `
+            : ""
+        }
+
+      </p>
+
+
+      <p>
+
+        مدة المجموعة:
+
+        ${
+          group.duration_minutes ||
+          60
+        }
+
+        دقيقة
+
+      </p>
+
+    </div>
+
+  `;
+
+}
+
+
+// =====================================================
+// إضافة مجموعة
+// =====================================================
+
+function addGroup(type) {
+
+  const isSolution =
+    type === "solution";
+
+
+  openModal(`
+
+    <h2>
+
+      ${
+        isSolution
+          ? "إضافة مجموعة حل"
+          : "إضافة مجموعة أساسية"
+      }
+
+    </h2>
+
+
+    <form
+      class="form"
+      onsubmit="saveGroup(event, '${type}')"
+    >
+
+
+      <label>
+
+        اسم المجموعة
+
+        <input
+          id="groupName"
+          required
+          placeholder="مثال: مجموعة السبت والثلاثاء"
+        >
+
+      </label>
+
+
+      <label>
+
+        الصف
+
+        <select
+          id="groupGrade"
+          required
+        >
+
+          <option value="">
+            اختر الصف
+          </option>
+
+          <option value="first_secondary">
+            الأول الثانوي
+          </option>
+
+          <option value="third_secondary">
+            الثالث الثانوي
+          </option>
+
+        </select>
+
+      </label>
+
+
+      ${
+        isSolution
+          ? `
+
+            <label>
+
+              اليوم الأول
+
+              <select
+                id="groupDay1"
+                required
+              >
+
+                <option value="">
+                  اختر اليوم
+                </option>
+
+                <option value="sunday">
+                  الأحد
+                </option>
+
+                <option value="tuesday">
+                  الثلاثاء
+                </option>
+
+                <option value="thursday">
+                  الخميس
+                </option>
+
+              </select>
+
+            </label>
+
+
+            <label>
+
+              اليوم الثاني
+
+              <select
+                id="groupDay2"
+              >
+
+                <option value="">
+                  —
+                </option>
+
+                <option value="sunday">
+                  الأحد
+                </option>
+
+                <option value="tuesday">
+                  الثلاثاء
+                </option>
+
+                <option value="thursday">
+                  الخميس
+                </option>
+
+              </select>
+
+            </label>
+
+
+            <label>
+
+              اليوم الثالث
+
+              <select
+                id="groupDay3"
+              >
+
+                <option value="">
+                  —
+                </option>
+
+                <option value="sunday">
+                  الأحد
+                </option>
+
+                <option value="tuesday">
+                  الثلاثاء
+                </option>
+
+                <option value="thursday">
+                  الخميس
+                </option>
+
+              </select>
+
+            </label>
+
+          `
+          : `
+
+            <label>
+
+              اليوم الأول
+
+              <select
+                id="groupDay1"
+                required
+              >
+
+                <option value="">
+                  اختر اليوم
+                </option>
+
+                <option value="saturday">
+                  السبت
+                </option>
+
+                <option value="sunday">
+                  الأحد
+                </option>
+
+                <option value="monday">
+                  الاثنين
+                </option>
+
+              </select>
+
+            </label>
+
+
+            <label>
+
+              اليوم الثاني
+
+              <select
+                id="groupDay2"
+                required
+              >
+
+                <option value="">
+                  اختر اليوم
+                </option>
+
+                <option value="tuesday">
+                  الثلاثاء
+                </option>
+
+                <option value="wednesday">
+                  الأربعاء
+                </option>
+
+                <option value="thursday">
+                  الخميس
+                </option>
+
+              </select>
+
+            </label>
+
+          `
+      }
+
+
+      <label>
+
+        وقت البداية
+
+        <input
+          id="groupStart"
+          type="time"
+          value="${
+            isSolution
+              ? "10:00"
+              : ""
+          }"
+          required
+        >
+
+      </label>
+
+
+      ${
+        isSolution
+          ? `
+
+            <label>
+
+              وقت النهاية
+
+              <input
+                id="groupEnd"
+                type="time"
+                value="12:00"
+                required
+              >
+
+            </label>
+
+          `
+          : ""
+      }
+
+
+      <label>
+
+        مدة المجموعة بالدقائق
+
+        <input
+          id="groupDuration"
+          type="number"
+          min="30"
+          value="${
+            isSolution
+              ? 120
+              : 60
+          }"
+          required
+        >
+
+      </label>
+
+
+      <div class="notice">
+
+        ${
+          isSolution
+            ? `
+              مجموعة الحل للثالث الثانوي
+              تكون في الأحد أو الثلاثاء أو الخميس.
+              الطالب يحضر يومًا واحدًا فقط.
+              الجمعة إجازة.
+            `
+            : `
+              المجموعة الأساسية لها يومان أسبوعيًا،
+              مثل السبت والثلاثاء أو الأحد والأربعاء
+              أو الاثنين والخميس.
+              مدة الحصة ساعة.
+            `
+        }
+
+      </div>
+
+
+      <button
+        class="btn"
+        type="submit"
+      >
+
+        حفظ المجموعة
+
+      </button>
+
+
+    </form>
+
+  `);
+
+}
+
+
+// =====================================================
+// حفظ المجموعة
+// =====================================================
+
+async function saveGroup(
+  e,
+  type
+) {
+
+  e.preventDefault();
+
+
+  const name =
+    document
+      .getElementById(
+        "groupName"
+      )
+      .value
+      .trim();
+
+
+  const grade =
+    document
+      .getElementById(
+        "groupGrade"
+      )
+      .value;
+
+
+  const day1 =
+    document
+      .getElementById(
+        "groupDay1"
+      )
+      .value;
+
+
+  const day2 =
+    document
+      .getElementById(
+        "groupDay2"
+      )
+      ?.value || null;
+
+
+  const day3 =
+    document
+      .getElementById(
+        "groupDay3"
+      )
+      ?.value || null;
+
+
+  const startTime =
+    document
+      .getElementById(
+        "groupStart"
+      )
+      .value;
+
+
+  const endTime =
+    document
+      .getElementById(
+        "groupEnd"
+      )
+      ?.value || null;
+
+
+  const duration =
+    Number(
+      document
+        .getElementById(
+          "groupDuration"
+        )
+        .value
+    );
+
+
+  if (!name) {
+
+    alert(
+      "اكتب اسم المجموعة."
+    );
+
+    return;
+  }
+
+
+  if (!grade) {
+
+    alert(
+      "اختر الصف."
+    );
+
+    return;
+  }
+
+
+  if (!day1) {
+
+    alert(
+      "اختر اليوم."
+    );
+
+    return;
+  }
+
+
+  if (
+    type === "main" &&
+    !day2
+  ) {
+
+    alert(
+      "المجموعة الأساسية تحتاج يومين."
+    );
+
+    return;
+  }
+
+
+  if (!startTime) {
+
+    alert(
+      "اختر وقت البداية."
+    );
+
+    return;
+  }
+
+
+  if (
+    type === "solution" &&
+    !endTime
+  ) {
+
+    alert(
+      "اختر وقت النهاية."
+    );
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await sb
+      .from("groups")
+      .insert({
+
+        name,
+
+        grade,
+
+        type,
+
+        day1,
+
+        day2,
+
+        day3,
+
+        start_time:
+          startTime,
+
+        end_time:
+          endTime,
+
+        duration_minutes:
+          duration
+
+      });
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      error.message
+    );
+
+    return;
+  }
+
+
+  closeModal();
+
+  await loadGroups();
+
+}
+
+
+// =====================================================
+// تعديل مجموعة
+// =====================================================
+
+function editGroup(group) {
+
+  const isSolution =
+    group.type ===
+    "solution";
+
+
+  openModal(`
+
+    <h2>
+      تعديل المجموعة
+    </h2>
+
+
+    <form
+      class="form"
+      onsubmit="updateGroup(event, '${group.id}', '${group.type}')"
+    >
+
+      <label>
+
+        اسم المجموعة
+
+        <input
+          id="groupName"
+          value="${esc(
+            group.name || ""
+          )}"
+          required
+        >
+
+      </label>
+
+
+      <label>
+
+        الصف
+
+        <select
+          id="groupGrade"
+          required
+        >
+
+          <option
+            value="first_secondary"
+            ${
+              group.grade ===
+              "first_secondary"
+                ? "selected"
+                : ""
+            }
+          >
+            الأول الثانوي
+          </option>
+
+          <option
+            value="third_secondary"
+            ${
+              group.grade ===
+              "third_secondary"
+                ? "selected"
+                : ""
+            }
+          >
+            الثالث الثانوي
+          </option>
+
+        </select>
+
+      </label>
+
+
+      <label>
+
+        اليوم الأول
+
+        <select
+          id="groupDay1"
+          required
+        >
+
+          ${daysOptions(
+            group.day1
+          )}
+
+        </select>
+
+      </label>
+
+
+      <label>
+
+        اليوم الثاني
+
+        <select
+          id="groupDay2"
+        >
+
+          ${daysOptions(
+            group.day2
+          )}
+
+        </select>
+
+      </label>
+
+
+      ${
+        isSolution
+          ? `
+
+            <label>
+
+              اليوم الثالث
+
+              <select
+                id="groupDay3"
+              >
+
+                ${daysOptions(
+                  group.day3
+                )}
+
+              </select>
+
+            </label>
+
+          `
+          : ""
+      }
+
+
+      <label>
+
+        وقت البداية
+
+        <input
+          id="groupStart"
+          type="time"
+          value="${esc(
+            normalizeTime(
+              group.start_time
+            )
+          )}"
+          required
+        >
+
+      </label>
+
+
+      ${
+        isSolution
+          ? `
+
+            <label>
+
+              وقت النهاية
+
+              <input
+                id="groupEnd"
+                type="time"
+                value="${esc(
+                  normalizeTime(
+                    group.end_time
+                  )
+                )}"
+                required
+              >
+
+            </label>
+
+          `
+          : ""
+      }
+
+
+      <label>
+
+        مدة المجموعة بالدقائق
+
+        <input
+          id="groupDuration"
+          type="number"
+          min="30"
+          value="${
+            group.duration_minutes ||
+            (isSolution
+              ? 120
+              : 60)
+          }"
+          required
+        >
+
+      </label>
+
+
+      <button
+        class="btn"
+        type="submit"
+      >
+
+        حفظ التعديلات
+
+      </button>
+
+    </form>
+
+  `);
+
+}
+
+
+// =====================================================
+// تحديث مجموعة
+// =====================================================
+
+async function updateGroup(
+  e,
+  id,
+  type
+) {
+
+  e.preventDefault();
+
+
+  const updates = {
+
+    name:
+      document
+        .getElementById(
+          "groupName"
+        )
+        .value
+        .trim(),
+
+    grade:
+      document
+        .getElementById(
+          "groupGrade"
+        )
+        .value,
+
+    day1:
+      document
+        .getElementById(
+          "groupDay1"
+        )
+        .value,
+
+    day2:
+      document
+        .getElementById(
+          "groupDay2"
+        )
+        ?.value || null,
+
+    day3:
+      document
+        .getElementById(
+          "groupDay3"
+        )
+        ?.value || null,
+
+    start_time:
+      document
+        .getElementById(
+          "groupStart"
+        )
+        .value,
+
+    end_time:
+      document
+        .getElementById(
+          "groupEnd"
+        )
+        ?.value || null,
+
+    duration_minutes:
+      Number(
+        document
+          .getElementById(
+            "groupDuration"
+          )
+          .value
+      )
+
+  };
+
+
+  const {
+    error
+  } =
+    await sb
+      .from("groups")
+      .update(updates)
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    alert(
+      error.message
+    );
+
+    return;
+  }
+
+
+  closeModal();
+
+  await loadGroups();
+
+}
+
+
+// =====================================================
+// خيارات الأيام
+// =====================================================
+
+function daysOptions(selected) {
+
+  const days = [
+
+    ["", "—"],
+
+    ["saturday", "السبت"],
+
+    ["sunday", "الأحد"],
+
+    ["monday", "الاثنين"],
+
+    ["tuesday", "الثلاثاء"],
+
+    ["wednesday", "الأربعاء"],
+
+    ["thursday", "الخميس"]
+
+  ];
+
+
+  return days
+    .map(
+      day => `
+
+        <option
+          value="${day[0]}"
+          ${
+            selected === day[0]
+              ? "selected"
+              : ""
+          }
+        >
+
+          ${day[1]}
+
+        </option>
+
+      `
+    )
+    .join("");
+
+}
+
+
+// =====================================================
+// أسماء الأيام
+// =====================================================
+
+function dayArabic(day) {
+
+  return {
+
+    saturday: "السبت",
+
+    sunday: "الأحد",
+
+    monday: "الاثنين",
+
+    tuesday: "الثلاثاء",
+
+    wednesday: "الأربعاء",
+
+    thursday: "الخميس"
+
+  }[day] || "—";
+
+}
+
+
+// =====================================================
+// أيام المجموعة الأساسية
+// =====================================================
+
+function formatGroupDays(group) {
+
+  const result = [];
+
+  if (group?.day1)
+    result.push(
+      dayArabic(
+        group.day1
+      )
+    );
+
+  if (group?.day2)
+    result.push(
+      dayArabic(
+        group.day2
+      )
+    );
+
+  return result.join(" - ") || "—";
+
+}
+
+
+// =====================================================
+// أيام مجموعة الحل
+// =====================================================
+
+function formatSolutionDays(group) {
+
+  const result = [];
+
+  if (group?.day1)
+    result.push(
+      dayArabic(
+        group.day1
+      )
+    );
+
+  if (group?.day2)
+    result.push(
+      dayArabic(
+        group.day2
+      )
+    );
+
+  if (group?.day3)
+    result.push(
+      dayArabic(
+        group.day3
+      )
+    );
+
+  return result.join(" - ") || "—";
+
+}
+
+
+// =====================================================
+// الوقت
+// =====================================================
+
+function normalizeTime(time) {
+
+  if (!time)
+    return "";
+
+  return String(
+    time
+  ).substring(
+    0,
+    5
+  );
+
+}
+
+
+function formatTime(time) {
+
+  if (!time)
+    return "—";
+
+  const parts =
+    String(time)
+      .substring(0, 5)
+      .split(":");
+
+  let hour =
+    Number(parts[0]);
+
+  const minute =
+    parts[1] || "00";
+
+  const period =
+    hour >= 12
+      ? "م"
+      : "ص";
+
+  hour =
+    hour % 12 || 12;
+
+  return `${hour}:${minute} ${period}`;
+
+}
+
+
+// =====================================================
+// الصف
+// =====================================================
+
+function gradeArabic(grade) {
+
+  return {
+
+    first_secondary:
+      "الأول الثانوي",
+
+    second_secondary:
+      "الثاني الثانوي",
+
+    third_secondary:
+      "الثالث الثانوي"
+
+  }[grade] || grade || "—";
 
 }
 
@@ -1820,11 +3500,8 @@ async function saveProfile(e) {
   );
 
 
-  if (!error) {
-
+  if (!error)
     await loadProfile();
-
-  }
 
 }
 
@@ -1869,7 +3546,6 @@ async function changePassword() {
         تحديث
       </button>
 
-
     </form>
 
   `);
@@ -1883,7 +3559,8 @@ async function doPassword(e) {
 
 
   if (
-    currentProfile.role === "student"
+    currentProfile.role ===
+    "student"
   ) {
 
     alert(
@@ -1891,7 +3568,6 @@ async function doPassword(e) {
     );
 
     return;
-
   }
 
 
@@ -1918,7 +3594,6 @@ async function doPassword(e) {
     );
 
     return;
-
   }
 
 
@@ -1936,11 +3611,8 @@ async function doPassword(e) {
   );
 
 
-  if (!error) {
-
+  if (!error)
     closeModal();
-
-  }
 
 }
 
@@ -1990,11 +3662,8 @@ function simpleForm(title) {
 
 
       <button class="btn">
-
         حفظ
-
       </button>
-
 
     </form>
 
@@ -2010,7 +3679,7 @@ function simpleForm(title) {
 async function saveAttendance() {
 
   alert(
-    "سيتم ربط نظام الحضور في الخطوة القادمة."
+    "سيتم ربط نظام الحضور تلقائيًا حسب أيام المجموعة في الخطوة التالية."
   );
 
 }
@@ -2038,7 +3707,6 @@ function studentPDF(s) {
       <title>
         بيان الطالب
       </title>
-
 
       <style>
 
@@ -2085,7 +3753,6 @@ function studentPDF(s) {
 
       <table>
 
-
         ${
           [
             [
@@ -2100,17 +3767,9 @@ function studentPDF(s) {
 
             [
               "الصف",
-              s.grade
-            ],
-
-            [
-              "المجموعة الأساسية",
-              s.main_group?.name || ""
-            ],
-
-            [
-              "مجموعة الحل",
-              s.solution_group?.name || ""
+              gradeArabic(
+                s.grade
+              )
             ],
 
             [
@@ -2124,14 +3783,42 @@ function studentPDF(s) {
             ],
 
             [
+              "المجموعة الأساسية",
+              s.groups?.name || "—"
+            ],
+
+            [
+              "أيام المجموعة",
+              formatGroupDays(
+                s.groups
+              )
+            ],
+
+            [
+              "مجموعة الحل",
+              s.solution_group?.name ||
+              "—"
+            ],
+
+            [
+              "أيام الحل",
+              formatSolutionDays(
+                s.solution_group
+              )
+            ],
+
+            [
               "نسبة الحضور",
-              (s.attendance_percent ?? 0) +
-              "%"
+              (
+                s.attendance_percent ??
+                0
+              ) + "%"
             ],
 
             [
               "النقاط",
-              s.points ?? 0
+              s.points ??
+              0
             ]
 
           ]
@@ -2141,11 +3828,15 @@ function studentPDF(s) {
                 <tr>
 
                   <td class="h">
-                    ${esc(x[0])}
+                    ${esc(
+                      x[0]
+                    )}
                   </td>
 
                   <td>
-                    ${esc(x[1])}
+                    ${esc(
+                      x[1]
+                    )}
                   </td>
 
                 </tr>
@@ -2153,19 +3844,14 @@ function studentPDF(s) {
               `
             )
             .join("")
-
         }
-
 
       </table>
 
 
       <script>
-
         window.print();
-
       <\/script>
-
 
     </body>
 
@@ -2188,7 +3874,6 @@ function studentPDF(s) {
     );
 
     return;
-
   }
 
 
@@ -2222,7 +3907,6 @@ function applyFont() {
     );
 
     return;
-
   }
 
 
@@ -2251,7 +3935,6 @@ function applyFont() {
 
             document.body.style.fontFamily =
               "UploadedFont,Arial";
-
 
             alert(
               "تم تطبيق الخط على الجلسة الحالية."
@@ -2286,11 +3969,9 @@ function openModal(content) {
       "modal"
     );
 
-
   if (modalContent)
     modalContent.innerHTML =
       content;
-
 
   if (modal)
     modal.classList.remove(
@@ -2306,7 +3987,6 @@ function closeModal() {
     document.getElementById(
       "modal"
     );
-
 
   if (modal)
     modal.classList.add(
