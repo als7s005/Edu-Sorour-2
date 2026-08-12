@@ -2077,16 +2077,22 @@ async function createStudent(e) {
   // التحقق من حصة الحل
   // ===================================================
 
-  if (!solutionGroupId) {
+ const solutionSelect = form.querySelector("#ssolution");
 
-    alert(
-      "يجب اختيار حصة الحل."
-    );
+if (!solutionSelect) {
+  alert("لم يتم العثور على خانة حصة الحل.");
+  console.error("العنصر #ssolution غير موجود داخل الفورم");
+  return;
+}
 
-    solutionSelect.focus();
+const solutionGroupId = solutionSelect.value.trim();
 
-    return;
-  }
+if (!solutionGroupId) {
+  alert("يجب اختيار حصة الحل.");
+  solutionSelect.focus();
+  return;
+}
+
 
 
   // ===================================================
