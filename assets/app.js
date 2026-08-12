@@ -73,7 +73,6 @@ const navByRole = {
 async function boot() {
 
   if (!sb) {
-
     showLogin();
 
     setLoginMessage(
@@ -151,7 +150,7 @@ async function loadProfile() {
     showLogin();
 
     setLoginMessage(
-      "لم يتم العثور على ملف الحساب. تأكد من إنشاء profile لهذا المستخدم."
+      "لم يتم العثور على ملف الحساب."
     );
 
     return;
@@ -251,13 +250,8 @@ function setLoginMessage(message) {
   const el =
     document.getElementById("loginMsg");
 
-  if (el) {
-
-    el.textContent =
-      message;
-
-  }
-
+  if (el)
+    el.textContent = message;
 }
 
 
@@ -306,12 +300,8 @@ if (loginForm) {
         .eq("student_id", id)
         .maybeSingle();
 
-      if (studentData?.email) {
-
-        email =
-          studentData.email;
-
-      }
+      if (studentData?.email)
+        email = studentData.email;
 
       const {
         data,
@@ -333,8 +323,7 @@ if (loginForm) {
         return;
       }
 
-      currentUser =
-        data.user;
+      currentUser = data.user;
 
       await loadProfile();
 
@@ -356,14 +345,10 @@ if (logoutBtn) {
   logoutBtn.onclick =
     async () => {
 
-      if (sb) {
-
+      if (sb)
         await sb.auth.signOut();
 
-      }
-
     };
-
 }
 
 
@@ -420,7 +405,6 @@ function render() {
         };
 
       });
-
   }
 
   const content =
@@ -437,7 +421,6 @@ function render() {
 
   if (page === "groups")
     loadGroups();
-
 }
 
 
@@ -447,21 +430,11 @@ function render() {
 
 function pageHTML(p) {
 
-  // ---------------------------------------------------
-  // Dashboard
-  // ---------------------------------------------------
-
-  if (p === "dashboard") {
-
+  if (p === "dashboard")
     return dashboardHTML();
 
-  }
 
-
-  // ---------------------------------------------------
   // الطلاب
-  // ---------------------------------------------------
-
   if (p === "students") {
 
     return `
@@ -493,6 +466,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="searchbar">
 
           <input
@@ -501,6 +475,7 @@ function pageHTML(p) {
           >
 
         </div>
+
 
         <div class="table-wrap">
 
@@ -552,14 +527,10 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
   // المعلمين
-  // ---------------------------------------------------
-
   if (p === "teachers") {
 
     return `
@@ -589,13 +560,12 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // المجموعات
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "groups") {
 
@@ -607,7 +577,9 @@ function pageHTML(p) {
 
           <div class="section-head">
 
-            <h2>المجموعات الأساسية</h2>
+            <h2>
+              المجموعات الأساسية
+            </h2>
 
             <button
               class="btn"
@@ -632,7 +604,9 @@ function pageHTML(p) {
 
           <div class="section-head">
 
-            <h2>مجموعات الحل</h2>
+            <h2>
+              مجموعات الحل
+            </h2>
 
             <button
               class="btn"
@@ -655,14 +629,10 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
   // الحضور
-  // ---------------------------------------------------
-
   if (p === "attendance") {
 
     return `
@@ -699,14 +669,10 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
   // الامتحانات
-  // ---------------------------------------------------
-
   if (p === "exams") {
 
     return `
@@ -736,14 +702,10 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
   // المحادثات
-  // ---------------------------------------------------
-
   if (p === "messages") {
 
     return `
@@ -763,6 +725,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <h2>المحادثة</h2>
@@ -779,14 +742,10 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
   // الإشعارات
-  // ---------------------------------------------------
-
   if (p === "notifications") {
 
     return `
@@ -814,6 +773,7 @@ function pageHTML(p) {
 
           </label>
 
+
           <label>
 
             العنوان
@@ -824,6 +784,7 @@ function pageHTML(p) {
             >
 
           </label>
+
 
           <label>
 
@@ -837,6 +798,7 @@ function pageHTML(p) {
 
           </label>
 
+
           <button class="btn">
 
             إرسال
@@ -848,14 +810,10 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
   // التقارير
-  // ---------------------------------------------------
-
   if (p === "reports") {
 
     return `
@@ -874,6 +832,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <span class="kpi">
@@ -886,6 +845,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <span class="kpi">
@@ -897,6 +857,7 @@ function pageHTML(p) {
           </strong>
 
         </div>
+
 
         <div class="card">
 
@@ -912,6 +873,7 @@ function pageHTML(p) {
 
       </div>
 
+
       <div class="card">
 
         <h2>نظام النقاط</h2>
@@ -923,14 +885,10 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
 
-  // ---------------------------------------------------
   // الإعدادات
-  // ---------------------------------------------------
-
   if (p === "settings") {
 
     return `
@@ -959,6 +917,7 @@ function pageHTML(p) {
 
             </label>
 
+
             <label>
 
               الهاتف
@@ -972,11 +931,13 @@ function pageHTML(p) {
 
             </label>
 
+
             <button class="btn">
               حفظ البيانات
             </button>
 
           </form>
+
 
           <button
             class="btn secondary"
@@ -991,9 +952,9 @@ function pageHTML(p) {
       </div>
 
     `;
-
   }
 
+  return "";
 }
 
 
@@ -1118,7 +1079,6 @@ function dashboardHTML() {
     </div>
 
   `;
-
 }
 
 
@@ -1130,19 +1090,6 @@ async function loadStudents() {
 
   if (!sb)
     return;
-
-  /*
-    مهم جدًا:
-
-    عند وجود علاقتين بين students و groups
-    لازم نحدد اسم الـ FK صراحة.
-
-    group_id
-      -> students_group_id_fkey
-
-    solution_group_id
-      -> students_solution_group_id_fkey
-  */
 
   const {
     data,
@@ -1159,6 +1106,7 @@ async function loadStudents() {
           day1,
           day2,
           start_time,
+          end_time,
           duration_minutes
         ),
         solution_group:groups!students_solution_group_id_fkey(
@@ -1216,8 +1164,7 @@ async function loadStudents() {
     return;
   }
 
-  let arr =
-    data || [];
+  let arr = data || [];
 
   if (
     currentProfile.role ===
@@ -1230,7 +1177,6 @@ async function loadStudents() {
           student.profile_id ===
           currentUser.id
       );
-
   }
 
   body.innerHTML =
@@ -1256,11 +1202,9 @@ async function loadStudents() {
                 </span>
 
                 <b>
-
                   ${esc(
                     student.full_name
                   )}
-
                 </b>
 
               </div>
@@ -1269,122 +1213,113 @@ async function loadStudents() {
 
 
             <td>
-
               ${esc(
                 student.student_id
               )}
-
             </td>
 
 
             <td>
-
               ${esc(
-                student.grade ||
-                ""
+                gradeArabic(
+                  student.grade
+                )
               )}
+            </td>
+
+
+            <td>
+
+              <b>
+                ${
+                  esc(
+                    student.groups?.name ||
+                    "—"
+                  )
+                }
+              </b>
+
+              ${
+                student.groups
+                  ? `
+                    <small
+                      style="
+                        display:block;
+                        color:#718096;
+                        margin-top:4px
+                      "
+                    >
+
+                      ${formatGroupDays(
+                        student.groups
+                      )}
+
+                      ${
+                        student.groups.start_time
+                          ? `
+                            -
+                            ${formatTime(
+                              student.groups.start_time
+                            )}
+                          `
+                          : ""
+                      }
+
+                    </small>
+                  `
+                  : ""
+              }
 
             </td>
 
 
             <td>
 
-              <div>
-
-                <b>
-
-                  ${
-                    esc(
-                      student.groups?.name ||
-                      "—"
-                    )
-                  }
-
-                </b>
+              <b>
 
                 ${
-                  student.groups
-                    ? `
-                      <small
-                        style="
-                          display:block;
-                          color:#718096;
-                          margin-top:4px
-                        "
-                      >
-
-                        ${formatGroupDays(
-                          student.groups
-                        )}
-
-                        ${
-                          student.groups.start_time
-                            ? `
-                              -
-                              ${formatTime(
-                                student.groups.start_time
-                              )}
-                            `
-                            : ""
-                        }
-
-                      </small>
-                    `
-                    : ""
+                  esc(
+                    student.solution_group?.name ||
+                    "—"
+                  )
                 }
 
-              </div>
+              </b>
 
-            </td>
+              ${
+                student.solution_group
+                  ? `
+                    <small
+                      style="
+                        display:block;
+                        color:#718096;
+                        margin-top:4px
+                      "
+                    >
 
+                      ${formatSolutionDays(
+                        student.solution_group
+                      )}
 
-            <td>
+                      ${
+                        student.solution_group.start_time
+                          ? `
+                            -
+                            ${formatTime(
+                              student.solution_group.start_time
+                            )}
+                            إلى
+                            ${formatTime(
+                              student.solution_group.end_time
+                            )}
+                          `
+                          : ""
+                      }
 
-              <div>
-
-                <b>
-
-                  ${
-                    esc(
-                      student.solution_group?.name ||
-                      "—"
-                    )
-                  }
-
-                </b>
-
-                ${
-                  student.solution_group
-                    ? `
-                      <small
-                        style="
-                          display:block;
-                          color:#718096;
-                          margin-top:4px
-                        "
-                      >
-
-                        ${formatSolutionDays(
-                          student.solution_group
-                        )}
-
-                        ${
-                          student.solution_group.start_time
-                            ? `
-                              -
-                              ${formatTime(
-                                student.solution_group.start_time
-                              )}
-                            `
-                            : ""
-                        }
-
-                      </small>
-                    `
-                    : ""
-                }
-
-              </div>
+                    </small>
+                  `
+                  : ""
+              }
 
             </td>
 
@@ -1421,9 +1356,7 @@ async function loadStudents() {
                   student
                 )})'
               >
-
                 PDF
-
               </button>
 
             </td>
@@ -1433,23 +1366,23 @@ async function loadStudents() {
         `
       )
       .join("")
-      ||
-      `
+    ||
+    `
 
-        <tr>
+      <tr>
 
-          <td
-            colspan="8"
-            class="empty"
-          >
+        <td
+          colspan="8"
+          class="empty"
+        >
 
-            لا توجد بيانات
+          لا توجد بيانات
 
-          </td>
+        </td>
 
-        </tr>
+      </tr>
 
-      `;
+    `;
 
 
   const input =
@@ -1480,9 +1413,7 @@ async function loadStudents() {
       });
 
     };
-
   }
-
 }
 
 
@@ -1495,8 +1426,6 @@ async function addStudent() {
   if (!sb)
     return;
 
-
-  // تحميل المجموعات الأساسية
   const {
     data: groups,
     error: groupsError
@@ -1504,11 +1433,9 @@ async function addStudent() {
     await sb
       .from("groups")
       .select("*")
-      .eq("type", "main")
+      .eq("group_type", "main")
       .order("name");
 
-
-  // تحميل مجموعات الحل
   const {
     data: solutionGroups,
     error: solutionError
@@ -1516,22 +1443,14 @@ async function addStudent() {
     await sb
       .from("groups")
       .select("*")
-      .eq("type", "solution")
+      .eq("group_type", "solution")
       .order("name");
 
-
-  if (groupsError) {
-
+  if (groupsError)
     console.error(groupsError);
 
-  }
-
-  if (solutionError) {
-
+  if (solutionError)
     console.error(solutionError);
-
-  }
-
 
   const mainGroups =
     groups || [];
@@ -1699,16 +1618,16 @@ async function addStudent() {
                         group
                       )}
 
-                      ${
+                      -
+                      ${formatTime(
                         group.start_time
-                          ? `
-                            -
-                            ${formatTime(
-                              group.start_time
-                            )}
-                          `
-                          : ""
-                      }
+                      )}
+
+                      إلى
+
+                      ${formatTime(
+                        group.end_time
+                      )}
 
                     </option>
                   `
@@ -1745,8 +1664,13 @@ async function addStudent() {
 
         <br>
 
-        يجب اختيار المجموعة الأساسية
-        ومجموعة الحل.
+        المجموعة الأساسية يومان أسبوعيًا.
+
+        <br>
+
+        مجموعة الحل يوم واحد فقط:
+        الأحد أو الثلاثاء أو الخميس،
+        من 10 صباحًا إلى 12 ظهرًا.
 
       </div>
 
@@ -1784,13 +1708,11 @@ async function createStudent(e) {
     return;
   }
 
-
   const fullName =
     document
       .getElementById("sn")
       .value
       .trim();
-
 
   const phone =
     document
@@ -1798,31 +1720,26 @@ async function createStudent(e) {
       .value
       .trim();
 
-
   const parentPhone =
     document
       .getElementById("sparent")
       .value
       .trim();
 
-
   const grade =
     document
       .getElementById("sg")
       .value;
-
 
   const groupId =
     document
       .getElementById("sgrp")
       .value;
 
-
   const solutionGroupId =
     document
       .getElementById("ssolution")
       .value;
-
 
   const seatNumber =
     document
@@ -1833,33 +1750,24 @@ async function createStudent(e) {
 
   if (!fullName) {
 
-    alert(
-      "اكتب اسم الطالب."
-    );
+    alert("اكتب اسم الطالب.");
 
     return;
   }
-
 
   if (!phone) {
 
-    alert(
-      "اكتب رقم هاتف الطالب."
-    );
+    alert("اكتب رقم هاتف الطالب.");
 
     return;
   }
-
 
   if (!grade) {
 
-    alert(
-      "اختر الصف."
-    );
+    alert("اختر الصف.");
 
     return;
   }
-
 
   if (!groupId) {
 
@@ -1869,7 +1777,6 @@ async function createStudent(e) {
 
     return;
   }
-
 
   if (!solutionGroupId) {
 
@@ -1881,7 +1788,6 @@ async function createStudent(e) {
   }
 
 
-  // منع تكرار رقم الطالب
   const {
     data: existingStudent
   } =
@@ -1890,7 +1796,6 @@ async function createStudent(e) {
       .select("id")
       .eq("phone", phone)
       .maybeSingle();
-
 
   if (existingStudent) {
 
@@ -1902,7 +1807,6 @@ async function createStudent(e) {
   }
 
 
-  // منع تكرار رقم ولي الأمر مع طالب آخر
   if (parentPhone) {
 
     const {
@@ -1917,7 +1821,6 @@ async function createStudent(e) {
         )
         .maybeSingle();
 
-
     if (existingParent) {
 
       alert(
@@ -1926,7 +1829,6 @@ async function createStudent(e) {
 
       return;
     }
-
   }
 
 
@@ -1936,29 +1838,25 @@ async function createStudent(e) {
   } =
     await sb.auth.getSession();
 
-
   if (
     sessionError ||
     !sessionData.session
   ) {
 
     alert(
-      "انتهت جلسة تسجيل الدخول. سجل الدخول مرة أخرى."
+      "انتهت جلسة تسجيل الدخول."
     );
 
     return;
   }
 
 
-  const form =
-    e.target;
-
+  const form = e.target;
 
   const button =
     form.querySelector(
       'button[type="submit"]'
     );
-
 
   const oldText =
     button
@@ -1968,12 +1866,10 @@ async function createStudent(e) {
 
   if (button) {
 
-    button.disabled =
-      true;
+    button.disabled = true;
 
     button.textContent =
       "جاري إنشاء الطالب...";
-
   }
 
 
@@ -2040,7 +1936,6 @@ async function createStudent(e) {
         result.error ||
         "حدث خطأ أثناء إنشاء الطالب."
       );
-
     }
 
 
@@ -2106,19 +2001,6 @@ async function createStudent(e) {
         </div>
 
 
-        <p
-          style="
-            color:#718096;
-            font-size:13px
-          "
-        >
-
-          احتفظ بالـID وكلمة المرور
-          لإعطائهما للطالب.
-
-        </p>
-
-
         <button
           class="btn"
           onclick="closeModal();loadStudents()"
@@ -2135,7 +2017,6 @@ async function createStudent(e) {
 
     await loadStudents();
 
-
   } catch (error) {
 
     console.error(error);
@@ -2145,26 +2026,22 @@ async function createStudent(e) {
       "حدث خطأ أثناء إنشاء الطالب."
     );
 
-
   } finally {
 
     if (button) {
 
-      button.disabled =
-        false;
+      button.disabled = false;
 
       button.textContent =
         oldText;
 
     }
-
   }
-
 }
 
 
 // =====================================================
-// المجموعات
+// تحميل المجموعات
 // =====================================================
 
 async function loadGroups() {
@@ -2180,9 +2057,12 @@ async function loadGroups() {
     await sb
       .from("groups")
       .select("*")
-      .order("created_at", {
-        ascending: false
-      });
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
 
   const mainList =
@@ -2220,15 +2100,14 @@ async function loadGroups() {
   const mainGroups =
     (data || []).filter(
       group =>
-        !group.type ||
-        group.type === "main"
+        group.group_type === "main"
     );
 
 
   const solutionGroups =
     (data || []).filter(
       group =>
-        group.type === "solution"
+        group.group_type === "solution"
     );
 
 
@@ -2250,7 +2129,6 @@ async function loadGroups() {
             لا توجد مجموعات أساسية.
           </div>
         `;
-
   }
 
 
@@ -2272,9 +2150,7 @@ async function loadGroups() {
             لا توجد مجموعات حل.
           </div>
         `;
-
   }
-
 }
 
 
@@ -2398,7 +2274,7 @@ function groupCardHTML(
 
         ${
           group.duration_minutes ||
-          60
+          (isSolution ? 120 : 60)
         }
 
         دقيقة
@@ -2408,7 +2284,6 @@ function groupCardHTML(
     </div>
 
   `;
-
 }
 
 
@@ -2443,19 +2318,6 @@ function addGroup(type) {
 
       <label>
 
-        اسم المجموعة
-
-        <input
-          id="groupName"
-          required
-          placeholder="مثال: مجموعة السبت والثلاثاء"
-        >
-
-      </label>
-
-
-      <label>
-
         الصف
 
         <select
@@ -2467,13 +2329,23 @@ function addGroup(type) {
             اختر الصف
           </option>
 
-          <option value="first_secondary">
-            الأول الثانوي
-          </option>
+          ${
+            isSolution
+              ? `
+                <option value="third_secondary">
+                  الثالث الثانوي
+                </option>
+              `
+              : `
+                <option value="first_secondary">
+                  الأول الثانوي
+                </option>
 
-          <option value="third_secondary">
-            الثالث الثانوي
-          </option>
+                <option value="third_secondary">
+                  الثالث الثانوي
+                </option>
+              `
+          }
 
         </select>
 
@@ -2482,11 +2354,12 @@ function addGroup(type) {
 
       ${
         isSolution
+
           ? `
 
             <label>
 
-              اليوم الأول
+              يوم مجموعة الحل
 
               <select
                 id="groupDay1"
@@ -2514,89 +2387,89 @@ function addGroup(type) {
             </label>
 
 
-            <label>
-
-              اليوم الثاني
-
-              <select
-                id="groupDay2"
-              >
-
-                <option value="">
-                  —
-                </option>
-
-                <option value="sunday">
-                  الأحد
-                </option>
-
-                <option value="tuesday">
-                  الثلاثاء
-                </option>
-
-                <option value="thursday">
-                  الخميس
-                </option>
-
-              </select>
-
-            </label>
+            <input
+              type="hidden"
+              id="groupDay2"
+              value=""
+            >
 
 
-            <label>
+            <input
+              type="hidden"
+              id="groupDay3"
+              value=""
+            >
 
-              اليوم الثالث
 
-              <select
-                id="groupDay3"
-              >
+            <input
+              type="hidden"
+              id="groupStart"
+              value="10:00"
+            >
 
-                <option value="">
-                  —
-                </option>
 
-                <option value="sunday">
-                  الأحد
-                </option>
+            <input
+              type="hidden"
+              id="groupEnd"
+              value="12:00"
+            >
 
-                <option value="tuesday">
-                  الثلاثاء
-                </option>
 
-                <option value="thursday">
-                  الخميس
-                </option>
+            <input
+              type="hidden"
+              id="groupDuration"
+              value="120"
+            >
 
-              </select>
 
-            </label>
+            <div class="notice">
+
+              مجموعة الحل للثالث الثانوي فقط.
+
+              <br>
+
+              تختار يومًا واحدًا فقط:
+
+              الأحد أو الثلاثاء أو الخميس.
+
+              <br>
+
+              الوقت ثابت من 10:00 صباحًا
+              إلى 12:00 ظهرًا.
+
+              <br>
+
+              الجمعة إجازة.
+
+            </div>
 
           `
+
           : `
 
             <label>
 
-              اليوم الأول
+              أيام المجموعة الأساسية
 
               <select
-                id="groupDay1"
+                id="mainSchedule"
                 required
               >
 
                 <option value="">
-                  اختر اليوم
+                  اختر أيام المجموعة
                 </option>
 
-                <option value="saturday">
-                  السبت
+                <option value="saturday_tuesday">
+                  السبت والثلاثاء
                 </option>
 
-                <option value="sunday">
-                  الأحد
+                <option value="sunday_wednesday">
+                  الأحد والأربعاء
                 </option>
 
-                <option value="monday">
-                  الاثنين
+                <option value="monday_thursday">
+                  الاثنين والخميس
                 </option>
 
               </select>
@@ -2604,116 +2477,78 @@ function addGroup(type) {
             </label>
 
 
-            <label>
-
-              اليوم الثاني
-
-              <select
-                id="groupDay2"
-                required
-              >
-
-                <option value="">
-                  اختر اليوم
-                </option>
-
-                <option value="tuesday">
-                  الثلاثاء
-                </option>
-
-                <option value="wednesday">
-                  الأربعاء
-                </option>
-
-                <option value="thursday">
-                  الخميس
-                </option>
-
-              </select>
-
-            </label>
-
-          `
-      }
+            <input
+              type="hidden"
+              id="groupDay1"
+            >
 
 
-      <label>
-
-        وقت البداية
-
-        <input
-          id="groupStart"
-          type="time"
-          value="${
-            isSolution
-              ? "10:00"
-              : ""
-          }"
-          required
-        >
-
-      </label>
+            <input
+              type="hidden"
+              id="groupDay2"
+            >
 
 
-      ${
-        isSolution
-          ? `
+            <input
+              type="hidden"
+              id="groupDay3"
+              value=""
+            >
+
 
             <label>
 
-              وقت النهاية
+              وقت بداية المجموعة
 
               <input
-                id="groupEnd"
+                id="groupStart"
                 type="time"
-                value="12:00"
                 required
               >
 
             </label>
 
+
+            <input
+              type="hidden"
+              id="groupDuration"
+              value="60"
+            >
+
+
+            <div class="notice">
+
+              المجموعة الأساسية يومان أسبوعيًا.
+
+              <br>
+
+              الخيارات:
+
+              السبت والثلاثاء
+
+              <br>
+
+              الأحد والأربعاء
+
+              <br>
+
+              الاثنين والخميس
+
+              <br>
+
+              مدة الحصة ساعة واحدة.
+
+            </div>
+
           `
-          : ""
       }
 
 
-      <label>
-
-        مدة المجموعة بالدقائق
-
-        <input
-          id="groupDuration"
-          type="number"
-          min="30"
-          value="${
-            isSolution
-              ? 120
-              : 60
-          }"
-          required
-        >
-
-      </label>
-
-
-      <div class="notice">
-
-        ${
-          isSolution
-            ? `
-              مجموعة الحل للثالث الثانوي
-              تكون في الأحد أو الثلاثاء أو الخميس.
-              الطالب يحضر يومًا واحدًا فقط.
-              الجمعة إجازة.
-            `
-            : `
-              المجموعة الأساسية لها يومان أسبوعيًا،
-              مثل السبت والثلاثاء أو الأحد والأربعاء
-              أو الاثنين والخميس.
-              مدة الحصة ساعة.
-            `
-        }
-
+      <div
+        id="generatedGroupName"
+        class="notice"
+      >
+        سيتم إنشاء اسم المجموعة تلقائيًا.
       </div>
 
 
@@ -2731,6 +2566,190 @@ function addGroup(type) {
 
   `);
 
+
+  // تحديث الاسم تلقائيًا
+  setupGroupNamePreview(type);
+
+}
+
+
+// =====================================================
+// توليد اسم المجموعة تلقائيًا
+// =====================================================
+
+function setupGroupNamePreview(type) {
+
+  const grade =
+    document.getElementById(
+      "groupGrade"
+    );
+
+  const day =
+    document.getElementById(
+      "groupDay1"
+    );
+
+  const schedule =
+    document.getElementById(
+      "mainSchedule"
+    );
+
+  const start =
+    document.getElementById(
+      "groupStart"
+    );
+
+  const preview =
+    document.getElementById(
+      "generatedGroupName"
+    );
+
+
+  function update() {
+
+    if (!preview)
+      return;
+
+    const gradeText =
+      gradeArabic(
+        grade?.value
+      );
+
+
+    if (
+      type === "solution"
+    ) {
+
+      const dayText =
+        dayArabic(
+          day?.value
+        );
+
+      if (
+        !grade?.value ||
+        !day?.value
+      ) {
+
+        preview.textContent =
+          "سيتم إنشاء اسم المجموعة تلقائيًا.";
+
+        return;
+      }
+
+      preview.innerHTML =
+        `<strong>اسم المجموعة:</strong>
+        ${esc(
+          `${gradeText} - مجموعة الحل - ${dayText} - 10:00 ص إلى 12:00 م`
+        )}`;
+
+      return;
+    }
+
+
+    let daysText = "";
+
+    if (
+      schedule?.value ===
+      "saturday_tuesday"
+    ) {
+
+      daysText =
+        "السبت والثلاثاء";
+
+    } else if (
+      schedule?.value ===
+      "sunday_wednesday"
+    ) {
+
+      daysText =
+        "الأحد والأربعاء";
+
+    } else if (
+      schedule?.value ===
+      "monday_thursday"
+    ) {
+
+      daysText =
+        "الاثنين والخميس";
+    }
+
+
+    if (
+      !grade?.value ||
+      !schedule?.value ||
+      !start?.value
+    ) {
+
+      preview.textContent =
+        "سيتم إنشاء اسم المجموعة تلقائيًا.";
+
+      return;
+    }
+
+
+    preview.innerHTML =
+      `<strong>اسم المجموعة:</strong>
+      ${esc(
+        `${gradeText} - ${daysText} - ${formatTime(start.value)}`
+      )}`;
+  }
+
+
+  grade?.addEventListener(
+    "change",
+    update
+  );
+
+  day?.addEventListener(
+    "change",
+    update
+  );
+
+  schedule?.addEventListener(
+    "change",
+    () => {
+
+      const map = {
+
+        saturday_tuesday:
+          ["saturday", "tuesday"],
+
+        sunday_wednesday:
+          ["sunday", "wednesday"],
+
+        monday_thursday:
+          ["monday", "thursday"]
+
+      };
+
+      const selected =
+        map[schedule.value];
+
+      if (selected) {
+
+        document.getElementById(
+          "groupDay1"
+        ).value =
+          selected[0];
+
+        document.getElementById(
+          "groupDay2"
+        ).value =
+          selected[1];
+
+      }
+
+      update();
+
+    }
+  );
+
+
+  start?.addEventListener(
+    "change",
+    update
+  );
+
 }
 
 
@@ -2746,13 +2765,8 @@ async function saveGroup(
   e.preventDefault();
 
 
-  const name =
-    document
-      .getElementById(
-        "groupName"
-      )
-      .value
-      .trim();
+  const isSolution =
+    type === "solution";
 
 
   const grade =
@@ -2787,39 +2801,36 @@ async function saveGroup(
       ?.value || null;
 
 
-  const startTime =
-    document
-      .getElementById(
-        "groupStart"
-      )
-      .value;
+  let startTime;
+  let endTime;
+  let duration;
 
 
-  const endTime =
-    document
-      .getElementById(
-        "groupEnd"
-      )
-      ?.value || null;
+  if (isSolution) {
 
+    startTime =
+      "10:00";
 
-  const duration =
-    Number(
+    endTime =
+      "12:00";
+
+    duration =
+      120;
+
+  } else {
+
+    startTime =
       document
         .getElementById(
-          "groupDuration"
+          "groupStart"
         )
-        .value
-    );
+        .value;
 
+    endTime =
+      null;
 
-  if (!name) {
-
-    alert(
-      "اكتب اسم المجموعة."
-    );
-
-    return;
+    duration =
+      60;
   }
 
 
@@ -2844,22 +2855,12 @@ async function saveGroup(
 
 
   if (
-    type === "main" &&
+    !isSolution &&
     !day2
   ) {
 
     alert(
-      "المجموعة الأساسية تحتاج يومين."
-    );
-
-    return;
-  }
-
-
-  if (!startTime) {
-
-    alert(
-      "اختر وقت البداية."
+      "اختر أيام المجموعة الأساسية."
     );
 
     return;
@@ -2867,12 +2868,77 @@ async function saveGroup(
 
 
   if (
-    type === "solution" &&
-    !endTime
+    !isSolution &&
+    !startTime
   ) {
 
     alert(
-      "اختر وقت النهاية."
+      "اختر وقت بداية المجموعة."
+    );
+
+    return;
+  }
+
+
+  // ================================================
+  // إنشاء الاسم تلقائيًا
+  // ================================================
+
+  let groupName = "";
+
+
+  if (isSolution) {
+
+    groupName =
+      `${gradeArabic(grade)} - مجموعة الحل - ${dayArabic(day1)} - 10:00 ص إلى 12:00 م`;
+
+  } else {
+
+    groupName =
+      `${gradeArabic(grade)} - ${dayArabic(day1)} والثاني - ${formatTime(startTime)}`;
+
+    if (day2) {
+
+      groupName =
+        `${gradeArabic(grade)} - ${dayArabic(day1)} و${dayArabic(day2)} - ${formatTime(startTime)}`;
+
+    }
+  }
+
+
+  // ================================================
+  // التأكد من عدم وجود نفس المجموعة
+  // ================================================
+
+  const {
+    data: existing
+  } =
+    await sb
+      .from("groups")
+      .select("id")
+      .eq(
+        "group_type",
+        type
+      )
+      .eq(
+        "grade",
+        grade
+      )
+      .eq(
+        "day1",
+        day1
+      )
+      .eq(
+        "day2",
+        day2
+      )
+      .maybeSingle();
+
+
+  if (existing) {
+
+    alert(
+      "هذه المجموعة موجودة بالفعل."
     );
 
     return;
@@ -2886,17 +2952,23 @@ async function saveGroup(
       .from("groups")
       .insert({
 
-        name,
+        name:
+          groupName,
 
-        grade,
+        grade:
+          grade,
 
-        type,
+        group_type:
+          type,
 
-        day1,
+        day1:
+          day1,
 
-        day2,
+        day2:
+          day2,
 
-        day3,
+        day3:
+          day3,
 
         start_time:
           startTime,
@@ -2905,7 +2977,10 @@ async function saveGroup(
           endTime,
 
         duration_minutes:
-          duration
+          duration,
+
+        active:
+          true
 
       });
 
@@ -2936,7 +3011,7 @@ async function saveGroup(
 function editGroup(group) {
 
   const isSolution =
-    group.type ===
+    group.group_type ===
     "solution";
 
 
@@ -2949,22 +3024,8 @@ function editGroup(group) {
 
     <form
       class="form"
-      onsubmit="updateGroup(event, '${group.id}', '${group.type}')"
+      onsubmit="updateGroup(event, '${group.id}', '${group.group_type}')"
     >
-
-      <label>
-
-        اسم المجموعة
-
-        <input
-          id="groupName"
-          value="${esc(
-            group.name || ""
-          )}"
-          required
-        >
-
-      </label>
 
 
       <label>
@@ -2976,64 +3037,44 @@ function editGroup(group) {
           required
         >
 
-          <option
-            value="first_secondary"
-            ${
-              group.grade ===
-              "first_secondary"
-                ? "selected"
-                : ""
-            }
-          >
-            الأول الثانوي
-          </option>
+          ${
+            isSolution
+              ? `
+                <option
+                  value="third_secondary"
+                  selected
+                >
+                  الثالث الثانوي
+                </option>
+              `
+              : `
 
-          <option
-            value="third_secondary"
-            ${
-              group.grade ===
-              "third_secondary"
-                ? "selected"
-                : ""
-            }
-          >
-            الثالث الثانوي
-          </option>
+                <option
+                  value="first_secondary"
+                  ${
+                    group.grade ===
+                    "first_secondary"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  الأول الثانوي
+                </option>
 
-        </select>
+                <option
+                  value="third_secondary"
+                  ${
+                    group.grade ===
+                    "third_secondary"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  الثالث الثانوي
+                </option>
 
-      </label>
-
-
-      <label>
-
-        اليوم الأول
-
-        <select
-          id="groupDay1"
-          required
-        >
-
-          ${daysOptions(
-            group.day1
-          )}
-
-        </select>
-
-      </label>
-
-
-      <label>
-
-        اليوم الثاني
-
-        <select
-          id="groupDay2"
-        >
-
-          ${daysOptions(
-            group.day2
-          )}
+              `
+          }
 
         </select>
 
@@ -3042,61 +3083,200 @@ function editGroup(group) {
 
       ${
         isSolution
+
           ? `
 
             <label>
 
-              اليوم الثالث
+              يوم مجموعة الحل
 
               <select
-                id="groupDay3"
+                id="groupDay1"
+                required
               >
 
-                ${daysOptions(
-                  group.day3
-                )}
+                <option
+                  value="sunday"
+                  ${
+                    group.day1 ===
+                    "sunday"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  الأحد
+                </option>
+
+                <option
+                  value="tuesday"
+                  ${
+                    group.day1 ===
+                    "tuesday"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  الثلاثاء
+                </option>
+
+                <option
+                  value="thursday"
+                  ${
+                    group.day1 ===
+                    "thursday"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  الخميس
+                </option>
 
               </select>
 
             </label>
 
+
+            <input
+              type="hidden"
+              id="groupDay2"
+              value=""
+            >
+
+
+            <input
+              type="hidden"
+              id="groupDay3"
+              value=""
+            >
+
+
+            <input
+              type="hidden"
+              id="groupStart"
+              value="10:00"
+            >
+
+
+            <input
+              type="hidden"
+              id="groupEnd"
+              value="12:00"
+            >
+
+
+            <input
+              type="hidden"
+              id="groupDuration"
+              value="120"
+            >
+
+
+            <div class="notice">
+
+              مجموعة الحل:
+
+              يوم واحد فقط.
+
+              <br>
+
+              من 10:00 صباحًا
+              إلى 12:00 ظهرًا.
+
+            </div>
+
           `
-          : ""
-      }
 
-
-      <label>
-
-        وقت البداية
-
-        <input
-          id="groupStart"
-          type="time"
-          value="${esc(
-            normalizeTime(
-              group.start_time
-            )
-          )}"
-          required
-        >
-
-      </label>
-
-
-      ${
-        isSolution
-          ? `
+          : `
 
             <label>
 
-              وقت النهاية
+              أيام المجموعة الأساسية
+
+              <select
+                id="mainSchedule"
+                required
+              >
+
+                <option value="">
+                  اختر أيام المجموعة
+                </option>
+
+                <option
+                  value="saturday_tuesday"
+                  ${
+                    group.day1 === "saturday" &&
+                    group.day2 === "tuesday"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  السبت والثلاثاء
+                </option>
+
+                <option
+                  value="sunday_wednesday"
+                  ${
+                    group.day1 === "sunday" &&
+                    group.day2 === "wednesday"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  الأحد والأربعاء
+                </option>
+
+                <option
+                  value="monday_thursday"
+                  ${
+                    group.day1 === "monday" &&
+                    group.day2 === "thursday"
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  الاثنين والخميس
+                </option>
+
+              </select>
+
+            </label>
+
+
+            <input
+              type="hidden"
+              id="groupDay1"
+              value="${esc(
+                group.day1 || ""
+              )}"
+            >
+
+
+            <input
+              type="hidden"
+              id="groupDay2"
+              value="${esc(
+                group.day2 || ""
+              )}"
+            >
+
+
+            <input
+              type="hidden"
+              id="groupDay3"
+              value=""
+            >
+
+
+            <label>
+
+              وقت البداية
 
               <input
-                id="groupEnd"
+                id="groupStart"
                 type="time"
                 value="${esc(
                   normalizeTime(
-                    group.end_time
+                    group.start_time
                   )
                 )}"
                 required
@@ -3104,29 +3284,23 @@ function editGroup(group) {
 
             </label>
 
+
+            <input
+              type="hidden"
+              id="groupDuration"
+              value="60"
+            >
+
           `
-          : ""
       }
 
 
-      <label>
-
-        مدة المجموعة بالدقائق
-
-        <input
-          id="groupDuration"
-          type="number"
-          min="30"
-          value="${
-            group.duration_minutes ||
-            (isSolution
-              ? 120
-              : 60)
-          }"
-          required
-        >
-
-      </label>
+      <div
+        id="generatedGroupName"
+        class="notice"
+      >
+        اسم المجموعة يتولد تلقائيًا.
+      </div>
 
 
       <button
@@ -3142,11 +3316,16 @@ function editGroup(group) {
 
   `);
 
+
+  setupGroupNamePreview(
+    group.group_type
+  );
+
 }
 
 
 // =====================================================
-// تحديث مجموعة
+// تحديث المجموعة
 // =====================================================
 
 async function updateGroup(
@@ -3158,66 +3337,118 @@ async function updateGroup(
   e.preventDefault();
 
 
-  const updates = {
+  const isSolution =
+    type === "solution";
 
-    name:
-      document
-        .getElementById(
-          "groupName"
-        )
-        .value
-        .trim(),
 
-    grade:
-      document
-        .getElementById(
-          "groupGrade"
-        )
-        .value,
+  const grade =
+    document
+      .getElementById(
+        "groupGrade"
+      )
+      .value;
 
-    day1:
-      document
-        .getElementById(
-          "groupDay1"
-        )
-        .value,
 
-    day2:
-      document
-        .getElementById(
-          "groupDay2"
-        )
-        ?.value || null,
+  const day1 =
+    document
+      .getElementById(
+        "groupDay1"
+      )
+      .value;
 
-    day3:
-      document
-        .getElementById(
-          "groupDay3"
-        )
-        ?.value || null,
 
-    start_time:
+  const day2 =
+    document
+      .getElementById(
+        "groupDay2"
+      )
+      ?.value || null;
+
+
+  const day3 =
+    document
+      .getElementById(
+        "groupDay3"
+      )
+      ?.value || null;
+
+
+  let startTime;
+  let endTime;
+  let duration;
+
+
+  if (isSolution) {
+
+    startTime =
+      "10:00";
+
+    endTime =
+      "12:00";
+
+    duration =
+      120;
+
+  } else {
+
+    startTime =
       document
         .getElementById(
           "groupStart"
         )
-        .value,
+        .value;
+
+    endTime =
+      null;
+
+    duration =
+      60;
+  }
+
+
+  let groupName;
+
+
+  if (isSolution) {
+
+    groupName =
+      `${gradeArabic(grade)} - مجموعة الحل - ${dayArabic(day1)} - 10:00 ص إلى 12:00 م`;
+
+  } else {
+
+    groupName =
+      `${gradeArabic(grade)} - ${dayArabic(day1)} و${dayArabic(day2)} - ${formatTime(startTime)}`;
+  }
+
+
+  const updates = {
+
+    name:
+      groupName,
+
+    grade:
+      grade,
+
+    group_type:
+      type,
+
+    day1:
+      day1,
+
+    day2:
+      day2,
+
+    day3:
+      day3,
+
+    start_time:
+      startTime,
 
     end_time:
-      document
-        .getElementById(
-          "groupEnd"
-        )
-        ?.value || null,
+      endTime,
 
     duration_minutes:
-      Number(
-        document
-          .getElementById(
-            "groupDuration"
-          )
-          .value
-      )
+      duration
 
   };
 
@@ -3236,6 +3467,8 @@ async function updateGroup(
 
   if (error) {
 
+    console.error(error);
+
     alert(
       error.message
     );
@@ -3252,55 +3485,6 @@ async function updateGroup(
 
 
 // =====================================================
-// خيارات الأيام
-// =====================================================
-
-function daysOptions(selected) {
-
-  const days = [
-
-    ["", "—"],
-
-    ["saturday", "السبت"],
-
-    ["sunday", "الأحد"],
-
-    ["monday", "الاثنين"],
-
-    ["tuesday", "الثلاثاء"],
-
-    ["wednesday", "الأربعاء"],
-
-    ["thursday", "الخميس"]
-
-  ];
-
-
-  return days
-    .map(
-      day => `
-
-        <option
-          value="${day[0]}"
-          ${
-            selected === day[0]
-              ? "selected"
-              : ""
-          }
-        >
-
-          ${day[1]}
-
-        </option>
-
-      `
-    )
-    .join("");
-
-}
-
-
-// =====================================================
 // أسماء الأيام
 // =====================================================
 
@@ -3308,20 +3492,25 @@ function dayArabic(day) {
 
   return {
 
-    saturday: "السبت",
+    saturday:
+      "السبت",
 
-    sunday: "الأحد",
+    sunday:
+      "الأحد",
 
-    monday: "الاثنين",
+    monday:
+      "الاثنين",
 
-    tuesday: "الثلاثاء",
+    tuesday:
+      "الثلاثاء",
 
-    wednesday: "الأربعاء",
+    wednesday:
+      "الأربعاء",
 
-    thursday: "الخميس"
+    thursday:
+      "الخميس"
 
   }[day] || "—";
-
 }
 
 
@@ -3347,8 +3536,10 @@ function formatGroupDays(group) {
       )
     );
 
-  return result.join(" - ") || "—";
-
+  return (
+    result.join(" - ") ||
+    "—"
+  );
 }
 
 
@@ -3358,31 +3549,16 @@ function formatGroupDays(group) {
 
 function formatSolutionDays(group) {
 
-  const result = [];
+  if (!group)
+    return "—";
 
-  if (group?.day1)
-    result.push(
-      dayArabic(
-        group.day1
-      )
+  // مجموعة الحل لها يوم واحد فقط
+  if (group.day1)
+    return dayArabic(
+      group.day1
     );
 
-  if (group?.day2)
-    result.push(
-      dayArabic(
-        group.day2
-      )
-    );
-
-  if (group?.day3)
-    result.push(
-      dayArabic(
-        group.day3
-      )
-    );
-
-  return result.join(" - ") || "—";
-
+  return "—";
 }
 
 
@@ -3401,7 +3577,6 @@ function normalizeTime(time) {
     0,
     5
   );
-
 }
 
 
@@ -3430,7 +3605,6 @@ function formatTime(time) {
     hour % 12 || 12;
 
   return `${hour}:${minute} ${period}`;
-
 }
 
 
@@ -3451,8 +3625,9 @@ function gradeArabic(grade) {
     third_secondary:
       "الثالث الثانوي"
 
-  }[grade] || grade || "—";
-
+  }[grade] ||
+    grade ||
+    "—";
 }
 
 
@@ -3463,7 +3638,6 @@ function gradeArabic(grade) {
 async function saveProfile(e) {
 
   e.preventDefault();
-
 
   const {
     error
@@ -3502,7 +3676,6 @@ async function saveProfile(e) {
 
   if (!error)
     await loadProfile();
-
 }
 
 
@@ -3556,7 +3729,6 @@ async function changePassword() {
 async function doPassword(e) {
 
   e.preventDefault();
-
 
   if (
     currentProfile.role ===
@@ -3613,7 +3785,6 @@ async function doPassword(e) {
 
   if (!error)
     closeModal();
-
 }
 
 
@@ -3679,7 +3850,7 @@ function simpleForm(title) {
 async function saveAttendance() {
 
   alert(
-    "سيتم ربط نظام الحضور تلقائيًا حسب أيام المجموعة في الخطوة التالية."
+    "سيتم ربط نظام الحضور تلقائيًا حسب أيام المجموعة."
   );
 
 }
@@ -3784,7 +3955,8 @@ function studentPDF(s) {
 
             [
               "المجموعة الأساسية",
-              s.groups?.name || "—"
+              s.groups?.name ||
+              "—"
             ],
 
             [
@@ -3801,10 +3973,21 @@ function studentPDF(s) {
             ],
 
             [
-              "أيام الحل",
+              "يوم الحل",
               formatSolutionDays(
                 s.solution_group
               )
+            ],
+
+            [
+              "وقت الحل",
+              s.solution_group
+                ? `${formatTime(
+                    s.solution_group.start_time
+                  )} إلى ${formatTime(
+                    s.solution_group.end_time
+                  )}`
+                : "—"
             ],
 
             [
@@ -3817,8 +4000,7 @@ function studentPDF(s) {
 
             [
               "النقاط",
-              s.points ??
-              0
+              s.points ?? 0
             ]
 
           ]
@@ -3828,15 +4010,11 @@ function studentPDF(s) {
                 <tr>
 
                   <td class="h">
-                    ${esc(
-                      x[0]
-                    )}
+                    ${esc(x[0])}
                   </td>
 
                   <td>
-                    ${esc(
-                      x[1]
-                    )}
+                    ${esc(x[1])}
                   </td>
 
                 </tr>
@@ -3870,7 +4048,7 @@ function studentPDF(s) {
   if (!w) {
 
     alert(
-      "المتصفح منع فتح نافذة PDF. اسمح بالنوافذ المنبثقة."
+      "المتصفح منع فتح نافذة PDF."
     );
 
     return;
@@ -3882,7 +4060,6 @@ function studentPDF(s) {
   );
 
   w.document.close();
-
 }
 
 
@@ -3936,6 +4113,7 @@ function applyFont() {
             document.body.style.fontFamily =
               "UploadedFont,Arial";
 
+
             alert(
               "تم تطبيق الخط على الجلسة الحالية."
             );
@@ -3969,15 +4147,16 @@ function openModal(content) {
       "modal"
     );
 
+
   if (modalContent)
     modalContent.innerHTML =
       content;
+
 
   if (modal)
     modal.classList.remove(
       "hidden"
     );
-
 }
 
 
@@ -3988,11 +4167,11 @@ function closeModal() {
       "modal"
     );
 
+
   if (modal)
     modal.classList.add(
       "hidden"
     );
-
 }
 
 
