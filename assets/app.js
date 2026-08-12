@@ -1497,4 +1497,562 @@ async function createStudent(e) {
 
             <strong>
               اسم الطالب:
-           
+            </strong>
+
+            ${esc(student.name)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+              ID الطالب:
+            </strong>
+
+            ${esc(student.student_id)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+              كلمة المرور:
+            </strong>
+
+            ${esc(student.password)}
+
+          </p>
+
+        </div>
+
+
+        <p
+          style="
+            color:#718096;
+            font-size:13px
+          "
+        >
+
+          احتفظ بالـID وكلمة المرور
+          لإعطائهما للطالب.
+
+        </p>
+
+
+        <button
+          class="btn"
+          onclick="closeModal();loadStudents()"
+        >
+
+          تم
+
+        </button>
+
+      </div>
+
+    `);
+
+
+    await loadStudents();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      error.message ||
+      "حدث خطأ أثناء إنشاء الطالب."
+    );
+
+
+  } finally {
+
+    if (button) {
+
+      button.disabled = false;
+
+      button.textContent =
+        oldText;
+
+    }
+
+  }
+
+}
+
+
+// =====================================================
+// إعدادات الحساب
+// =====================================================
+
+async function saveProfile(e) {
+
+  e.preventDefault();
+
+  const {
+    error
+  } =
+    await sb
+      .from("profiles")
+      .update({
+
+        full_name:
+          document
+            .getElementById("profileName")
+            .value,
+
+        phone:
+          document
+            .getElementById("profilePhone")
+            .value
+
+      })
+      .eq(
+        "id",
+        currentUser.id
+      );
+
+
+  alert(
+    error
+      ? error.message
+      : "تم الحفظ"
+  );
+
+
+  if (!error) {
+
+    await loadProfile();
+
+  }
+
+}
+
+
+// =====================================================
+// تغيير كلمة المرور
+// =====================================================
+
+async function changePassword() {
+
+  openModal(`
+
+    <h2>
+      تغيير كلمة المرور
+    </h2>
+
+    <form
+      class="form"
+      onsubmit="doPassword(event)"
+    >
+
+      <input
+        id="newPass"
+        type="password"
+        minlength="8"
+        placeholder="كلمة المرور الجديدة"
+        required
+      >
+
+      <input
+        id="newPass2"
+        type="password"
+        minlength="8"
+        placeholder="تأكيد كلمة المرور"
+        required
+      >
+
+      <button class="btn">
+        تحديث
+      </button>
+
+    </form>
+
+  `);
+
+}
+
+
+async function doPassword(e) {
+
+  e.preventDefault();
+
+  if (
+    currentProfile.role === "student"
+  ) {
+
+    alert(
+      "الطالب لا يستطيع تغيير كلمة المرور."
+    );
+
+    return;
+
+  }
+
+
+  const a =
+    document
+      .getElementById("newPass")
+      .value;
+
+  const b =
+    document
+      .getElementById("newPass2")
+      .value;
+
+
+  if (a !== b) {
+
+    alert(
+      "كلمتا المرور غير متطابقتين"
+    );
+
+    return;
+
+  }
+
+
+  const {
+    error
+  } =
+    await sb.auth.updateUser({
+      password: a
+    });
+
+
+  alert(
+    error?.message ||
+    "تم تغيير كلمة المرور"
+  );
+
+
+  if (!error) {
+
+    closeModal();
+
+  }
+
+}
+
+
+// =====================================================
+// الإشعارات
+// =====================================================
+
+async function sendNotification(e) {
+
+  e.preventDefault();
+
+  alert(
+    "سيتم ربط الإشعارات في الخطوة القادمة."
+  );
+
+}
+
+
+// =====================================================
+// نماذج مؤقتة
+// =====================================================
+
+function simpleForm(title) {
+
+  openModal(`
+
+    <h2>
+      إضافة ${title}
+    </h2>
+
+    <form
+      class="form"
+      onsubmit="event.preventDefault();closeModal()"
+    >
+
+      <input
+        placeholder="الاسم"
+        required
+      >
+
+      <textarea
+        placeholder="التفاصيل"
+      ></textarea>
+
+      <button class="btn">
+        حفظ
+      </button>
+
+    </form>
+
+  `);
+
+}
+
+
+// =====================================================
+// الحضور
+// =====================================================
+
+async function saveAttendance() {
+
+  alert(
+    "سيتم ربط نظام الحضور في الخطوة القادمة."
+  );
+
+}
+
+
+// =====================================================
+// PDF
+// =====================================================
+
+function studentPDF(s) {
+
+  const html = `
+
+    <!doctype html>
+
+    <html lang="ar" dir="rtl">
+
+    <head>
+
+      <meta charset="utf-8">
+
+      <title>
+        بيان الطالب
+      </title>
+
+      <style>
+
+        body {
+          font-family: Arial;
+          padding: 35px;
+        }
+
+        h1 {
+          text-align:center;
+        }
+
+        table {
+          width:100%;
+          border-collapse:collapse;
+        }
+
+        td {
+          border:1px solid #ddd;
+          padding:10px;
+        }
+
+        .h {
+          font-weight:bold;
+          background:#f4f5f8;
+        }
+
+      </style>
+
+    </head>
+
+    <body>
+
+      <h1>
+        بيان الطالب
+      </h1>
+
+      <p style="text-align:center">
+        EduCenter
+      </p>
+
+      <table>
+
+        ${
+          [
+            ["الاسم", s.full_name],
+            ["ID", s.student_id],
+            ["الصف", s.grade],
+            ["الهاتف", s.phone || ""],
+            ["ولي الأمر", s.parent_phone || ""],
+            [
+              "نسبة الحضور",
+              (s.attendance_percent ?? 0) + "%"
+            ],
+            [
+              "النقاط",
+              s.points ?? 0
+            ]
+          ]
+            .map(
+              x => `
+                <tr>
+
+                  <td class="h">
+                    ${x[0]}
+                  </td>
+
+                  <td>
+                    ${esc(x[1])}
+                  </td>
+
+                </tr>
+              `
+            )
+            .join("")
+        }
+
+      </table>
+
+      <script>
+        window.print();
+      <\/script>
+
+    </body>
+
+    </html>
+
+  `;
+
+
+  const w =
+    window.open(
+      "",
+      "_blank"
+    );
+
+
+  if (!w) {
+
+    alert(
+      "المتصفح منع فتح نافذة PDF. اسمح بالنوافذ المنبثقة."
+    );
+
+    return;
+
+  }
+
+
+  w.document.write(html);
+
+  w.document.close();
+
+}
+
+
+// =====================================================
+// تطبيق الخط
+// =====================================================
+
+function applyFont() {
+
+  const file =
+    document
+      .getElementById("fontFile")
+      ?.files[0];
+
+
+  if (!file) {
+
+    alert(
+      "اختر الخط"
+    );
+
+    return;
+
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    event => {
+
+      const font =
+        new FontFace(
+          "UploadedFont",
+          event.target.result
+        );
+
+
+      font
+        .load()
+        .then(loaded => {
+
+          document.fonts.add(
+            loaded
+          );
+
+          document.body.style.fontFamily =
+            "UploadedFont,Arial";
+
+          alert(
+            "تم تطبيق الخط على الجلسة الحالية."
+          );
+
+        });
+
+    };
+
+
+  reader.readAsArrayBuffer(file);
+
+}
+
+
+// =====================================================
+// Modal
+// =====================================================
+
+function openModal(content) {
+
+  document
+    .getElementById("modalContent")
+    .innerHTML =
+      content;
+
+  document
+    .getElementById("modal")
+    .classList
+    .remove("hidden");
+
+}
+
+
+function closeModal() {
+
+  document
+    .getElementById("modal")
+    .classList
+    .add("hidden");
+
+}
+
+
+// =====================================================
+// حماية HTML
+// =====================================================
+
+function esc(value) {
+
+  return String(
+    value ?? ""
+  ).replace(
+    /[&<>"']/g,
+    char =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char])
+  );
+
+}
+
+
+// =====================================================
+// تشغيل
+// =====================================================
+
+boot();
