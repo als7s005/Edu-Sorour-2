@@ -1,5 +1,5 @@
 // =====================================================
-// سرور - Main JavaScript
+// EduCenter - Main JavaScript
 // =====================================================
 
 // =====================================================
@@ -118,14 +118,25 @@ async function boot() {
     } = await sb.auth.getSession();
 
     if (error) {
-      console.error(error);
+
+      console.error(
+        "GET SESSION ERROR:",
+        error
+      );
+
       showLogin();
+
+      setLoginMessage(
+        "تعذر التحقق من جلسة تسجيل الدخول."
+      );
+
       return;
     }
 
     if (session) {
 
-      currentUser = session.user;
+      currentUser =
+        session.user;
 
       await loadProfile();
 
@@ -138,15 +149,22 @@ async function boot() {
     sb.auth.onAuthStateChange(
       async (event, session) => {
 
+        console.log(
+          "AUTH EVENT:",
+          event
+        );
+
         if (session) {
 
-          currentUser = session.user;
+          currentUser =
+            session.user;
 
           await loadProfile();
 
         } else {
 
           currentUser = null;
+
           currentProfile = null;
 
           showLogin();
@@ -168,7 +186,9 @@ async function boot() {
     setLoginMessage(
       "حدث خطأ أثناء تشغيل النظام."
     );
+
   }
+
 }
 
 
@@ -188,11 +208,15 @@ async function loadProfile() {
   const {
     data,
     error
-  } = await sb
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .single();
+  } =
+    await sb
+      .from("profiles")
+      .select("*")
+      .eq(
+        "id",
+        currentUser.id
+      )
+      .single();
 
   if (error || !data) {
 
@@ -210,11 +234,13 @@ async function loadProfile() {
     return;
   }
 
-  currentProfile = data;
+  currentProfile =
+    data;
 
   showApp();
 
   render();
+
 }
 
 
@@ -224,13 +250,26 @@ async function loadProfile() {
 
 function showLogin() {
 
-  document
-    .getElementById("loginView")
-    ?.classList.remove("hidden");
+  const loginView =
+    document.getElementById(
+      "loginView"
+    );
 
-  document
-    .getElementById("app")
-    ?.classList.add("hidden");
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+  if (loginView)
+    loginView.classList.remove(
+      "hidden"
+    );
+
+  if (app)
+    app.classList.add(
+      "hidden"
+    );
+
 }
 
 
@@ -240,32 +279,57 @@ function showLogin() {
 
 function showApp() {
 
-  document
-    .getElementById("loginView")
-    ?.classList.add("hidden");
+  const loginView =
+    document.getElementById(
+      "loginView"
+    );
 
-  document
-    .getElementById("app")
-    ?.classList.remove("hidden");
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+  if (loginView)
+    loginView.classList.add(
+      "hidden"
+    );
+
+  if (app)
+    app.classList.remove(
+      "hidden"
+    );
+
 
   const name =
     currentProfile?.full_name ||
     "مستخدم";
 
+
   const userName =
-    document.getElementById("userName");
+    document.getElementById(
+      "userName"
+    );
 
   const roleLabel =
-    document.getElementById("roleLabel");
+    document.getElementById(
+      "roleLabel"
+    );
 
   const userMeta =
-    document.getElementById("userMeta");
+    document.getElementById(
+      "userMeta"
+    );
 
   const avatar =
-    document.getElementById("avatar");
+    document.getElementById(
+      "avatar"
+    );
+
 
   if (userName)
-    userName.textContent = name;
+    userName.textContent =
+      name;
+
 
   if (roleLabel)
     roleLabel.textContent =
@@ -273,13 +337,16 @@ function showApp() {
         currentProfile?.role
       );
 
+
   if (userMeta)
     userMeta.textContent =
       currentProfile?.role || "";
 
+
   if (avatar)
     avatar.textContent =
       name[0] || "م";
+
 }
 
 
@@ -290,9 +357,16 @@ function showApp() {
 function roleArabic(role) {
 
   return {
-    admin: "مدير",
-    teacher: "معلم",
-    student: "طالب"
+
+    admin:
+      "مدير",
+
+    teacher:
+      "معلم",
+
+    student:
+      "طالب"
+
   }[role] || role || "";
 
 }
@@ -305,10 +379,14 @@ function roleArabic(role) {
 function setLoginMessage(message) {
 
   const el =
-    document.getElementById("loginMsg");
+    document.getElementById(
+      "loginMsg"
+    );
 
   if (el)
-    el.textContent = message;
+    el.textContent =
+      message;
+
 }
 
 
@@ -321,16 +399,23 @@ document.addEventListener(
   () => {
 
     const loginForm =
-      document.getElementById("loginForm");
+      document.getElementById(
+        "loginForm"
+      );
 
     if (!loginForm)
       return;
+
 
     loginForm.addEventListener(
       "submit",
       async (e) => {
 
         e.preventDefault();
+
+
+        setLoginMessage("");
+
 
         if (!sb) {
 
@@ -341,18 +426,26 @@ document.addEventListener(
           return;
         }
 
+
         const idInput =
-          document.getElementById("loginId");
+          document.getElementById(
+            "loginId"
+          );
 
         const passwordInput =
-          document.getElementById("loginPassword");
+          document.getElementById(
+            "loginPassword"
+          );
+
 
         const id =
           idInput?.value
             ?.trim() || "";
 
+
         const pass =
           passwordInput?.value || "";
+
 
         if (!id) {
 
@@ -363,6 +456,7 @@ document.addEventListener(
           return;
         }
 
+
         if (!pass) {
 
           setLoginMessage(
@@ -372,60 +466,151 @@ document.addEventListener(
           return;
         }
 
-        let email = id;
+
+        const button =
+          loginForm.querySelector(
+            'button[type="submit"]'
+          );
+
+
+        const oldText =
+          button?.textContent ||
+          "تسجيل الدخول";
+
+
+        if (button) {
+
+          button.disabled =
+            true;
+
+          button.textContent =
+            "جاري تسجيل الدخول...";
+
+        }
+
 
         try {
 
-          const {
-            data: studentData
-          } = await sb
-            .from("profiles")
-            .select("email")
-            .eq(
-              "student_id",
-              id
-            )
-            .maybeSingle();
+          let email =
+            id;
 
-          if (studentData?.email)
-            email =
-              studentData.email;
+
+          // لو المستخدم كتب ID طالب
+          // نحاول الحصول على البريد من profiles
+
+          if (
+            !id.includes("@")
+          ) {
+
+            try {
+
+              const {
+                data: studentData,
+                error: studentLookupError
+              } =
+                await sb
+                  .from("profiles")
+                  .select("email")
+                  .eq(
+                    "student_id",
+                    id
+                  )
+                  .maybeSingle();
+
+
+              if (studentLookupError) {
+
+                console.warn(
+                  "Student email lookup:",
+                  studentLookupError
+                );
+
+              }
+
+
+              if (
+                studentData?.email
+              ) {
+
+                email =
+                  studentData.email;
+
+              }
+
+            } catch (lookupError) {
+
+              console.warn(
+                "Student lookup error:",
+                lookupError
+              );
+
+            }
+
+          }
+
+
+          const {
+            data,
+            error
+          } =
+            await sb.auth.signInWithPassword({
+
+              email:
+                email,
+
+              password:
+                pass
+
+            });
+
+
+          if (error) {
+
+            console.error(
+              "LOGIN ERROR:",
+              error
+            );
+
+            setLoginMessage(
+              "بيانات الدخول غير صحيحة."
+            );
+
+            return;
+          }
+
+
+          currentUser =
+            data.user;
+
+
+          await loadProfile();
+
 
         } catch (error) {
 
           console.error(
-            "Student email lookup:",
-            error
-          );
-        }
-
-        const {
-          data,
-          error
-        } =
-          await sb.auth.signInWithPassword({
-            email,
-            password: pass
-          });
-
-        if (error) {
-
-          console.error(
-            "LOGIN ERROR:",
+            "LOGIN EXCEPTION:",
             error
           );
 
           setLoginMessage(
-            "بيانات الدخول غير صحيحة."
+            error?.message ||
+            "حدث خطأ أثناء تسجيل الدخول."
           );
 
-          return;
+        } finally {
+
+          if (button) {
+
+            button.disabled =
+              false;
+
+            button.textContent =
+              oldText;
+
+          }
+
         }
-
-        currentUser =
-          data.user;
-
-        await loadProfile();
 
       }
     );
@@ -443,16 +628,33 @@ document.addEventListener(
   () => {
 
     const logoutBtn =
-      document.getElementById("logout");
+      document.getElementById(
+        "logout"
+      );
 
     if (!logoutBtn)
       return;
 
+
     logoutBtn.onclick =
       async () => {
 
-        if (sb)
+        if (!sb)
+          return;
+
+
+        try {
+
           await sb.auth.signOut();
+
+        } catch (error) {
+
+          console.error(
+            "LOGOUT ERROR:",
+            error
+          );
+
+        }
 
       };
 
@@ -469,22 +671,33 @@ function render() {
   if (!currentProfile)
     return;
 
+
   const pageTitle =
-    document.getElementById("pageTitle");
+    document.getElementById(
+      "pageTitle"
+    );
 
   const pageSub =
-    document.getElementById("pageSub");
+    document.getElementById(
+      "pageSub"
+    );
+
 
   if (pageTitle)
     pageTitle.textContent =
       titles[page]?.[0] || "";
 
+
   if (pageSub)
     pageSub.textContent =
       titles[page]?.[1] || "";
 
+
   const nav =
-    document.getElementById("nav");
+    document.getElementById(
+      "nav"
+    );
+
 
   if (nav) {
 
@@ -496,6 +709,7 @@ function render() {
       )
         .map(
           item => `
+
             <button
               class="${
                 item[0] === page
@@ -504,42 +718,60 @@ function render() {
               }"
               data-page="${esc(item[0])}"
             >
+
               ${esc(item[1])}
+
             </button>
+
           `
         )
         .join("");
+
 
     nav
       .querySelectorAll("button")
       .forEach(button => {
 
-        button.onclick = () => {
+        button.onclick =
+          () => {
 
-          page =
-            button.dataset.page;
+            page =
+              button.dataset.page;
 
-          render();
+            render();
 
-        };
+          };
 
       });
 
   }
 
+
   const content =
-    document.getElementById("content");
+    document.getElementById(
+      "content"
+    );
+
 
   if (!content)
     return;
 
+
   content.innerHTML =
     pageHTML(page);
 
-  if (page === "students")
+
+  if (
+    page ===
+    "students"
+  )
     loadStudents();
 
-  if (page === "groups")
+
+  if (
+    page ===
+    "groups"
+  )
     loadGroups();
 
 }
@@ -551,9 +783,9 @@ function render() {
 
 function pageHTML(p) {
 
-  // ---------------------------------------------------
+  // ===================================================
   // الطلاب
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "students") {
 
@@ -564,27 +796,43 @@ function pageHTML(p) {
         <div class="section-head">
 
           <h2>
+
             ${
-              currentProfile.role === "student"
+              currentProfile.role ===
+              "student"
+
                 ? "بياناتي"
+
                 : "الطلاب"
+
             }
+
           </h2>
 
+
           ${
-            currentProfile.role === "admin"
+            currentProfile.role ===
+            "admin"
+
               ? `
+
                 <button
                   class="btn"
                   onclick="addStudent()"
                 >
+
                   + إضافة طالب
+
                 </button>
+
               `
+
               : ""
+
           }
 
         </div>
+
 
         <div class="searchbar">
 
@@ -594,6 +842,7 @@ function pageHTML(p) {
           >
 
         </div>
+
 
         <div class="table-wrap">
 
@@ -616,6 +865,7 @@ function pageHTML(p) {
 
             </thead>
 
+
             <tbody id="studentBody">
 
               <tr>
@@ -624,7 +874,9 @@ function pageHTML(p) {
                   colspan="8"
                   class="empty"
                 >
+
                   جاري التحميل...
+
                 </td>
 
               </tr>
@@ -638,12 +890,13 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // المعلمين
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "teachers") {
 
@@ -653,33 +906,42 @@ function pageHTML(p) {
 
         <div class="section-head">
 
-          <h2>المعلمين</h2>
+          <h2>
+            المعلمين
+          </h2>
+
 
           <button
             class="btn"
             onclick="simpleForm('معلم')"
           >
+
             + إضافة معلم
+
           </button>
 
         </div>
+
 
         <div
           id="teacherList"
           class="empty"
         >
+
           جاري التحميل...
+
         </div>
 
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // المجموعات
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "groups") {
 
@@ -695,20 +957,26 @@ function pageHTML(p) {
               المجموعات الأساسية
             </h2>
 
+
             <button
               class="btn"
               onclick="addGroup('main')"
             >
+
               + إضافة مجموعة
+
             </button>
 
           </div>
+
 
           <div
             id="groupList"
             class="empty"
           >
+
             جاري التحميل...
+
           </div>
 
         </div>
@@ -722,20 +990,26 @@ function pageHTML(p) {
               مجموعات الحل
             </h2>
 
+
             <button
               class="btn"
               onclick="addGroup('solution')"
             >
+
               + إضافة مجموعة حل
+
             </button>
 
           </div>
+
 
           <div
             id="solutionGroupList"
             class="empty"
           >
+
             جاري التحميل...
+
           </div>
 
         </div>
@@ -743,12 +1017,13 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // الحضور
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "attendance") {
 
@@ -758,16 +1033,22 @@ function pageHTML(p) {
 
         <div class="section-head">
 
-          <h2>الحضور</h2>
+          <h2>
+            الحضور
+          </h2>
+
 
           <button
             class="btn"
             onclick="saveAttendance()"
           >
+
             حفظ الحضور
+
           </button>
 
         </div>
+
 
         <div class="notice">
 
@@ -776,22 +1057,26 @@ function pageHTML(p) {
 
         </div>
 
+
         <div
           id="attendanceList"
           class="empty"
         >
+
           جاري التحميل...
+
         </div>
 
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // الامتحانات
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "exams") {
 
@@ -801,33 +1086,42 @@ function pageHTML(p) {
 
         <div class="section-head">
 
-          <h2>الامتحانات</h2>
+          <h2>
+            الامتحانات
+          </h2>
+
 
           <button
             class="btn"
             onclick="simpleForm('امتحان')"
           >
+
             + إضافة امتحان
+
           </button>
 
         </div>
+
 
         <div
           id="examList"
           class="empty"
         >
+
           جاري التحميل...
+
         </div>
 
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // المحادثات
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "messages") {
 
@@ -837,26 +1131,37 @@ function pageHTML(p) {
 
         <div class="card">
 
-          <h2>المحادثات</h2>
+          <h2>
+            المحادثات
+          </h2>
+
 
           <div
             id="chatList"
             class="empty"
           >
+
             جاري التحميل...
+
           </div>
 
         </div>
 
+
         <div class="card">
 
-          <h2>المحادثة</h2>
+          <h2>
+            المحادثة
+          </h2>
+
 
           <div
             id="chatBox"
             class="empty"
           >
+
             اختر محادثة
+
           </div>
 
         </div>
@@ -864,12 +1169,13 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // الإشعارات
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "notifications") {
 
@@ -877,7 +1183,10 @@ function pageHTML(p) {
 
       <div class="card">
 
-        <h2>إرسال إشعار</h2>
+        <h2>
+          إرسال إشعار
+        </h2>
+
 
         <form
           class="form"
@@ -898,6 +1207,7 @@ function pageHTML(p) {
 
           </label>
 
+
           <label>
 
             العنوان
@@ -908,6 +1218,7 @@ function pageHTML(p) {
             >
 
           </label>
+
 
           <label>
 
@@ -921,11 +1232,14 @@ function pageHTML(p) {
 
           </label>
 
+
           <button
             class="btn"
             type="submit"
           >
+
             إرسال
+
           </button>
 
         </form>
@@ -933,12 +1247,13 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // التقارير
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "reports") {
 
@@ -958,6 +1273,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <span class="kpi">
@@ -970,6 +1286,7 @@ function pageHTML(p) {
 
         </div>
 
+
         <div class="card">
 
           <span class="kpi">
@@ -981,6 +1298,7 @@ function pageHTML(p) {
           </strong>
 
         </div>
+
 
         <div class="card">
 
@@ -996,23 +1314,31 @@ function pageHTML(p) {
 
       </div>
 
+
       <div class="card">
 
-        <h2>نظام النقاط</h2>
+        <h2>
+          نظام النقاط
+        </h2>
+
 
         <p>
-          النقاط مبنية على الحضور والامتحانات والتقييم الشهري.
+
+          النقاط مبنية على الحضور
+          والامتحانات والتقييم الشهري.
+
         </p>
 
       </div>
 
     `;
+
   }
 
 
-  // ---------------------------------------------------
+  // ===================================================
   // الإعدادات
-  // ---------------------------------------------------
+  // ===================================================
 
   if (p === "settings") {
 
@@ -1022,7 +1348,10 @@ function pageHTML(p) {
 
         <div class="card">
 
-          <h2>بيانات الحساب</h2>
+          <h2>
+            بيانات الحساب
+          </h2>
+
 
           <form
             class="form"
@@ -1042,6 +1371,7 @@ function pageHTML(p) {
 
             </label>
 
+
             <label>
 
               الهاتف
@@ -1055,21 +1385,27 @@ function pageHTML(p) {
 
             </label>
 
+
             <button
               class="btn"
               type="submit"
             >
+
               حفظ البيانات
+
             </button>
 
           </form>
+
 
           <button
             class="btn secondary"
             style="margin-top:10px"
             onclick="changePassword()"
           >
+
             تغيير كلمة المرور
+
           </button>
 
         </div>
@@ -1077,10 +1413,12 @@ function pageHTML(p) {
       </div>
 
     `;
+
   }
 
 
   return dashboardHTML();
+
 }
 
 
@@ -1099,18 +1437,26 @@ function dashboardHTML() {
         <div>
 
           <small>
+
             ${
-              currentProfile?.role === "student"
+              currentProfile?.role ===
+              "student"
+
                 ? "نسبة حضوري"
+
                 : "إجمالي الطلاب"
+
             }
+
           </small>
+
 
           <strong id="d1">
             —
           </strong>
 
         </div>
+
 
         <div class="icon">
           👥
@@ -1127,11 +1473,13 @@ function dashboardHTML() {
             متوسط الامتحانات
           </small>
 
+
           <strong id="d2">
             —
           </strong>
 
         </div>
+
 
         <div class="icon">
           📝
@@ -1148,11 +1496,13 @@ function dashboardHTML() {
             النقاط
           </small>
 
+
           <strong id="d3">
             —
           </strong>
 
         </div>
+
 
         <div class="icon">
           ⭐
@@ -1169,11 +1519,13 @@ function dashboardHTML() {
             الإشعارات
           </small>
 
+
           <strong id="d4">
             —
           </strong>
 
         </div>
+
 
         <div class="icon">
           🔔
@@ -1192,19 +1544,25 @@ function dashboardHTML() {
           تقييم الأداء الشهري
         </h2>
 
+
         <span class="badge green">
           يُحسب تلقائيًا
         </span>
 
       </div>
 
+
       <p>
-        يتم احتساب التقييم من الحضور ونتائج الامتحانات والتقييم الشهري.
+
+        يتم احتساب التقييم من الحضور
+        ونتائج الامتحانات والتقييم الشهري.
+
       </p>
 
     </div>
 
   `;
+
 }
 
 
@@ -1217,6 +1575,7 @@ async function loadStudents() {
   if (!sb)
     return;
 
+
   const {
     data,
     error
@@ -1224,8 +1583,11 @@ async function loadStudents() {
     await sb
       .from("students")
       .select(`
+
         *,
+
         groups!students_group_id_fkey(
+
           id,
           name,
           grade,
@@ -1234,8 +1596,11 @@ async function loadStudents() {
           start_time,
           end_time,
           duration_minutes
+
         ),
+
         solution_group:groups!students_solution_group_id_fkey(
+
           id,
           name,
           grade,
@@ -1245,10 +1610,13 @@ async function loadStudents() {
           start_time,
           end_time,
           duration_minutes
+
         ),
+
         profiles(
           full_name
         )
+
       `)
       .order(
         "created_at",
@@ -1257,13 +1625,16 @@ async function loadStudents() {
         }
       );
 
+
   const body =
     document.getElementById(
       "studentBody"
     );
 
+
   if (!body)
     return;
+
 
   if (error) {
 
@@ -1271,6 +1642,7 @@ async function loadStudents() {
       "LOAD STUDENTS ERROR:",
       error
     );
+
 
     body.innerHTML = `
 
@@ -1292,6 +1664,7 @@ async function loadStudents() {
 
     return;
   }
+
 
   let arr =
     data || [];
@@ -1335,12 +1708,15 @@ async function loadStudents() {
 
                 </span>
 
+
                 <b>
+
                   ${esc(
                     student.full_name ||
                     student.profiles?.full_name ||
                     "—"
                   )}
+
                 </b>
 
               </div>
@@ -1349,35 +1725,44 @@ async function loadStudents() {
 
 
             <td>
+
               ${esc(
                 student.student_id
               )}
+
             </td>
 
 
             <td>
+
               ${esc(
                 gradeArabic(
                   student.grade
                 )
               )}
+
             </td>
 
 
             <td>
 
               <b>
+
                 ${
                   esc(
                     student.groups?.name ||
                     "—"
                   )
                 }
+
               </b>
+
 
               ${
                 student.groups
+
                   ? `
+
                     <small
                       style="
                         display:block;
@@ -1392,18 +1777,26 @@ async function loadStudents() {
 
                       ${
                         student.groups.start_time
+
                           ? `
+
                             -
                             ${formatTime(
                               student.groups.start_time
                             )}
+
                           `
+
                           : ""
+
                       }
 
                     </small>
+
                   `
+
                   : ""
+
               }
 
             </td>
@@ -1412,17 +1805,22 @@ async function loadStudents() {
             <td>
 
               <b>
+
                 ${
                   esc(
                     student.solution_group?.name ||
                     "—"
                   )
                 }
+
               </b>
+
 
               ${
                 student.solution_group
+
                   ? `
+
                     <small
                       style="
                         display:block;
@@ -1437,22 +1835,32 @@ async function loadStudents() {
 
                       ${
                         student.solution_group.start_time
+
                           ? `
+
                             -
                             ${formatTime(
                               student.solution_group.start_time
                             )}
+
                             إلى
+
                             ${formatTime(
                               student.solution_group.end_time
                             )}
+
                           `
+
                           : ""
+
                       }
 
                     </small>
+
                   `
+
                   : ""
+
               }
 
             </td>
@@ -1490,7 +1898,9 @@ async function loadStudents() {
                   student
                 ).replace(/'/g, "&#39;")})'
               >
+
                 PDF
+
               </button>
 
             </td>
@@ -1501,6 +1911,7 @@ async function loadStudents() {
       )
       .join("")
     ||
+
     `
 
       <tr>
@@ -1524,29 +1935,32 @@ async function loadStudents() {
       "studentSearch"
     );
 
+
   if (input) {
 
-    input.oninput = () => {
+    input.oninput =
+      () => {
 
-      const q =
-        input.value
-          .trim()
-          .toLowerCase();
+        const q =
+          input.value
+            .trim()
+            .toLowerCase();
 
-      [
-        ...body.rows
-      ].forEach(row => {
 
-        row.style.display =
-          row.innerText
-            .toLowerCase()
-            .includes(q)
-              ? ""
-              : "none";
+        [
+          ...body.rows
+        ].forEach(row => {
 
-      });
+          row.style.display =
+            row.innerText
+              .toLowerCase()
+              .includes(q)
+                ? ""
+                : "none";
 
-    };
+        });
+
+      };
 
   }
 
@@ -1603,6 +2017,7 @@ async function addStudent() {
       groupsError
     );
 
+
   if (solutionError)
     console.error(
       "SOLUTION GROUPS ERROR:",
@@ -1613,14 +2028,9 @@ async function addStudent() {
   const mainGroups =
     groups || [];
 
+
   const solGroups =
     solutionGroups || [];
-
-
-  console.log(
-    "مجموعات الحل الموجودة:",
-    solGroups
-  );
 
 
   openModal(`
@@ -1637,7 +2047,6 @@ async function addStudent() {
     >
 
       <div class="form-grid">
-
 
         <label>
 
@@ -1719,10 +2128,12 @@ async function addStudent() {
               اختر المجموعة
             </option>
 
+
             ${
               mainGroups
                 .map(
                   group => `
+
                     <option
                       value="${esc(group.id)}"
                     >
@@ -1738,16 +2149,22 @@ async function addStudent() {
 
                       ${
                         group.start_time
+
                           ? `
+
                             -
                             ${formatTime(
                               group.start_time
                             )}
+
                           `
+
                           : ""
+
                       }
 
                     </option>
+
                   `
                 )
                 .join("")
@@ -1758,51 +2175,65 @@ async function addStudent() {
         </label>
 
 
-        <!-- =================================================
+        <!-- ==========================================
              حصة الحل
-             ================================================= -->
+             ========================================== -->
 
         <label>
 
-  مجموعة الحل
+          مجموعة الحل
 
-  <select
-    id="ssolution"
-    name="solution_group_id"
-    required
-  >
+          <select
+            id="ssolution"
+            name="solution_group_id"
+            required
+          >
 
-    <option value="">
-      اختر مجموعة الحل
-    </option>
-
-    ${
-      solGroups
-        .map(
-          group => `
-            <option value="${esc(group.id)}">
-
-              ${esc(group.name)}
-
-              -
-              ${formatSolutionDays(group)}
-
-              -
-              ${formatTime(group.start_time)}
-
-              إلى
-
-              ${formatTime(group.end_time)}
-
+            <option value="">
+              اختر مجموعة الحل
             </option>
-          `
-        )
-        .join("")
-    }
 
-  </select>
 
-</label>
+            ${
+              solGroups
+                .map(
+                  group => `
+
+                    <option
+                      value="${esc(group.id)}"
+                    >
+
+                      ${esc(
+                        group.name
+                      )}
+
+                      -
+                      ${formatSolutionDays(
+                        group
+                      )}
+
+                      -
+                      ${formatTime(
+                        group.start_time
+                      )}
+
+                      إلى
+
+                      ${formatTime(
+                        group.end_time
+                      )}
+
+                    </option>
+
+                  `
+                )
+                .join("")
+            }
+
+          </select>
+
+        </label>
+
 
         <label>
 
@@ -1854,14 +2285,13 @@ async function addStudent() {
   `);
 
 
-  // ---------------------------------------------------
   // مراقبة حصة الحل
-  // ---------------------------------------------------
 
   const solutionSelect =
     document.getElementById(
       "ssolution"
     );
+
 
   if (solutionSelect) {
 
@@ -1889,6 +2319,7 @@ async function addStudent() {
 async function createStudent(e) {
 
   e.preventDefault();
+
 
   if (!sb || !currentUser) {
 
@@ -1937,14 +2368,14 @@ async function createStudent(e) {
 
 
   // ===================================================
-  // IMPORTANT:
-  // نقرأ حصة الحل من document مباشرة
-  // وليس من form.querySelector
+  // حصة الحل
+  // مهم:
+  // تم تعريف المتغيرين مرة واحدة فقط
   // ===================================================
 
   const solutionSelect =
-    document.getElementById(
-      "ssolution"
+    form.querySelector(
+      "#ssolution"
     );
 
 
@@ -1978,30 +2409,36 @@ async function createStudent(e) {
     "========== CREATE STUDENT =========="
   );
 
+
   console.log(
     "fullName:",
     fullName
   );
+
 
   console.log(
     "phone:",
     phone
   );
 
+
   console.log(
     "grade:",
     grade
   );
+
 
   console.log(
     "groupId:",
     groupId
   );
 
+
   console.log(
     "solutionGroupId:",
     solutionGroupId
   );
+
 
   console.log(
     "seatNumber:",
@@ -2057,26 +2494,20 @@ async function createStudent(e) {
   // التحقق من حصة الحل
   // ===================================================
 
- const solutionSelect = form.querySelector("#ssolution");
+  if (!solutionGroupId) {
 
-if (!solutionSelect) {
-  alert("لم يتم العثور على خانة حصة الحل.");
-  console.error("العنصر #ssolution غير موجود داخل الفورم");
-  return;
-}
+    alert(
+      "يجب اختيار حصة الحل."
+    );
 
-const solutionGroupId = solutionSelect.value.trim();
+    solutionSelect.focus();
 
-if (!solutionGroupId) {
-  alert("يجب اختيار حصة الحل.");
-  solutionSelect.focus();
-  return;
-}
-
+    return;
+  }
 
 
   // ===================================================
-  // التأكد أن حصة الحل موجودة فعلًا
+  // التأكد أن حصة الحل موجودة
   // ===================================================
 
   const {
@@ -2106,9 +2537,11 @@ if (!solutionGroupId) {
       solutionCheckError
     );
 
+
     alert(
       "حدث خطأ أثناء التأكد من حصة الحل."
     );
+
 
     return;
   }
@@ -2119,6 +2552,7 @@ if (!solutionGroupId) {
     alert(
       "حصة الحل التي اخترتها غير موجودة أو تم حذفها."
     );
+
 
     return;
   }
@@ -2283,7 +2717,6 @@ if (!solutionGroupId) {
       group_id:
         groupId,
 
-      // IMPORTANT
       solution_group_id:
         solutionGroupId,
 
@@ -2361,16 +2794,8 @@ if (!solutionGroupId) {
       {};
 
 
-    // =================================================
-    // إغلاق فورم الإضافة
-    // =================================================
-
     closeModal();
 
-
-    // =================================================
-    // عرض البيانات
-    // =================================================
 
     openModal(`
 
@@ -2582,6 +3007,7 @@ async function loadGroups() {
 
     mainList.innerHTML =
       mainGroups.length
+
         ? mainGroups
             .map(
               group =>
@@ -2591,10 +3017,15 @@ async function loadGroups() {
                 )
             )
             .join("")
+
         : `
+
           <div class="empty">
+
             لا توجد مجموعات أساسية.
+
           </div>
+
         `;
 
   }
@@ -2604,6 +3035,7 @@ async function loadGroups() {
 
     solutionList.innerHTML =
       solutionGroups.length
+
         ? solutionGroups
             .map(
               group =>
@@ -2613,10 +3045,15 @@ async function loadGroups() {
                 )
             )
             .join("")
+
         : `
+
           <div class="empty">
+
             لا توجد مجموعات حل.
+
           </div>
+
         `;
 
   }
@@ -2653,6 +3090,7 @@ function groupCardHTML(
 
           </h3>
 
+
           <small>
 
             ${
@@ -2669,17 +3107,24 @@ function groupCardHTML(
         ${
           currentProfile?.role ===
           "admin"
+
             ? `
+
               <button
                 class="btn secondary"
                 onclick='editGroup(${JSON.stringify(
                   group
                 ).replace(/'/g, "&#39;")})'
               >
+
                 تعديل
+
               </button>
+
             `
+
             : ""
+
         }
 
       </div>
@@ -2724,15 +3169,21 @@ function groupCardHTML(
             : "—"
         }
 
+
         ${
           group.end_time
+
             ? `
+
               إلى
               ${formatTime(
                 group.end_time
               )}
+
             `
+
             : ""
+
         }
 
       </p>
@@ -2756,6 +3207,7 @@ function groupCardHTML(
     </div>
 
   `;
+
 }
 
 
@@ -2787,7 +3239,6 @@ function addGroup(type) {
       onsubmit="saveGroup(event, '${type}')"
     >
 
-
       <label>
 
         الصف
@@ -2801,22 +3252,37 @@ function addGroup(type) {
             اختر الصف
           </option>
 
+
           ${
             isSolution
+
               ? `
-                <option value="third_secondary">
-                  الثالث الثانوي
-                </option>
-              `
-              : `
-                <option value="first_secondary">
-                  الأول الثانوي
-                </option>
 
                 <option value="third_secondary">
+
                   الثالث الثانوي
+
                 </option>
+
               `
+
+              : `
+
+                <option value="first_secondary">
+
+                  الأول الثانوي
+
+                </option>
+
+
+                <option value="third_secondary">
+
+                  الثالث الثانوي
+
+                </option>
+
+              `
+
           }
 
         </select>
@@ -3007,6 +3473,7 @@ function addGroup(type) {
             </div>
 
           `
+
       }
 
 
@@ -3029,13 +3496,14 @@ function addGroup(type) {
 
       </button>
 
-
     </form>
 
   `);
 
 
-  setupGroupNamePreview(type);
+  setupGroupNamePreview(
+    type
+  );
 
 }
 
@@ -3111,18 +3579,21 @@ function setupGroupNamePreview(type) {
       }
 
 
-      preview.innerHTML =
-        `
-          <strong>
-            اسم المجموعة:
-          </strong>
+      preview.innerHTML = `
 
-          ${esc(
-            `${gradeText} - مجموعة الحل - ${dayText} - 10:00 ص إلى 12:00 م`
-          )}
-        `;
+        <strong>
+          اسم المجموعة:
+        </strong>
+
+        ${esc(
+          `${gradeText} - مجموعة الحل - ${dayText} - 10:00 ص إلى 12:00 م`
+        )}
+
+      `;
+
 
       return;
+
     }
 
 
@@ -3169,16 +3640,17 @@ function setupGroupNamePreview(type) {
     }
 
 
-    preview.innerHTML =
-      `
-        <strong>
-          اسم المجموعة:
-        </strong>
+    preview.innerHTML = `
 
-        ${esc(
-          `${gradeText} - ${daysText} - ${formatTime(start.value)}`
-        )}
-      `;
+      <strong>
+        اسم المجموعة:
+      </strong>
+
+      ${esc(
+        `${gradeText} - ${daysText} - ${formatTime(start.value)}`
+      )}
+
+    `;
 
   }
 
@@ -3501,9 +3973,11 @@ async function saveGroup(
       error
     );
 
+
     alert(
       error.message
     );
+
 
     return;
   }
@@ -3539,7 +4013,6 @@ function editGroup(group) {
       onsubmit="updateGroup(event, '${esc(group.id)}', '${esc(group.group_type)}')"
     >
 
-
       <label>
 
         الصف
@@ -3551,14 +4024,20 @@ function editGroup(group) {
 
           ${
             isSolution
+
               ? `
+
                 <option
                   value="third_secondary"
                   selected
                 >
+
                   الثالث الثانوي
+
                 </option>
+
               `
+
               : `
 
                 <option
@@ -3570,8 +4049,11 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   الأول الثانوي
+
                 </option>
+
 
                 <option
                   value="third_secondary"
@@ -3582,10 +4064,13 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   الثالث الثانوي
+
                 </option>
 
               `
+
           }
 
         </select>
@@ -3616,8 +4101,11 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   الأحد
+
                 </option>
+
 
                 <option
                   value="tuesday"
@@ -3628,8 +4116,11 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   الثلاثاء
+
                 </option>
+
 
                 <option
                   value="thursday"
@@ -3640,7 +4131,9 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   الخميس
+
                 </option>
 
               </select>
@@ -3713,6 +4206,7 @@ function editGroup(group) {
                   اختر أيام المجموعة
                 </option>
 
+
                 <option
                   value="saturday_tuesday"
                   ${
@@ -3722,8 +4216,11 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   السبت والثلاثاء
+
                 </option>
+
 
                 <option
                   value="sunday_wednesday"
@@ -3734,8 +4231,11 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   الأحد والأربعاء
+
                 </option>
+
 
                 <option
                   value="monday_thursday"
@@ -3746,7 +4246,9 @@ function editGroup(group) {
                       : ""
                   }
                 >
+
                   الاثنين والخميس
+
                 </option>
 
               </select>
@@ -3811,7 +4313,9 @@ function editGroup(group) {
         id="generatedGroupName"
         class="notice"
       >
+
         اسم المجموعة يتولد تلقائيًا.
+
       </div>
 
 
@@ -3819,7 +4323,9 @@ function editGroup(group) {
         class="btn"
         type="submit"
       >
+
         حفظ التعديلات
+
       </button>
 
     </form>
@@ -3986,9 +4492,11 @@ async function updateGroup(
       error
     );
 
+
     alert(
       error.message
     );
+
 
     return;
   }
@@ -4122,7 +4630,9 @@ function formatTime(time) {
 
 
   let hour =
-    Number(parts[0]);
+    Number(
+      parts[0]
+    );
 
 
   const minute =
@@ -4264,7 +4774,9 @@ async function changePassword() {
         class="btn"
         type="submit"
       >
+
         تحديث
+
       </button>
 
     </form>
@@ -4322,7 +4834,10 @@ async function doPassword(e) {
     error
   } =
     await sb.auth.updateUser({
-      password: a
+
+      password:
+        a
+
     });
 
 
@@ -4363,7 +4878,9 @@ function simpleForm(title) {
   openModal(`
 
     <h2>
+
       إضافة ${esc(title)}
+
     </h2>
 
 
@@ -4387,7 +4904,9 @@ function simpleForm(title) {
         class="btn"
         type="submit"
       >
+
         حفظ
+
       </button>
 
     </form>
@@ -4432,6 +4951,7 @@ function studentPDF(s) {
       <title>
         بيان الطالب
       </title>
+
 
       <style>
 
@@ -4480,6 +5000,7 @@ function studentPDF(s) {
 
         ${
           [
+
             [
               "الاسم",
               s.full_name ||
@@ -4540,12 +5061,15 @@ function studentPDF(s) {
             [
               "وقت الحل",
               s.solution_group
+
                 ? `${formatTime(
                     s.solution_group.start_time
                   )} إلى ${formatTime(
                     s.solution_group.end_time
                   )}`
+
                 : "—"
+
             ],
 
             [
@@ -4563,6 +5087,7 @@ function studentPDF(s) {
             ]
 
           ]
+
             .map(
               x => `
 
@@ -4581,6 +5106,7 @@ function studentPDF(s) {
               `
             )
             .join("")
+
         }
 
       </table>
@@ -4619,6 +5145,7 @@ function studentPDF(s) {
   w.document.write(
     html
   );
+
 
   w.document.close();
 
@@ -4690,6 +5217,7 @@ function applyFont() {
               "FONT ERROR:",
               error
             );
+
 
             alert(
               "تعذر تحميل الخط."
