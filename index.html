@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام إدارة سنتر مستر يحيى سرور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <section id="loginView" class="login-page">
+    <div class="login-card">
+      <div class="brand-mark">س</div>
+      <h1>سنتر مستر يحيى سرور</h1>
+      <p>نظام إدارة الطلاب والسنتر</p>
+
+      <form id="loginForm">
+        <label>رقم الهاتف</label>
+        <input id="loginPhone" type="tel" inputmode="numeric" maxlength="11" placeholder="01xxxxxxxxx" required>
+
+        <label>كلمة المرور</label>
+        <div class="password-box">
+          <input id="loginPassword" type="password" placeholder="كلمة المرور" required>
+          <button type="button" id="togglePassword">إظهار</button>
+        </div>
+
+        <button class="primary-btn" type="submit">تسجيل الدخول</button>
+      </form>
+
+      <small>كلمة المرور الافتراضية للطالب: آخر 6 أرقام من رقم الهاتف</small>
+    </div>
+  </section>
+
+  <section id="appView" class="app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark small">س</div>
+        <div>
+          <strong>سنتر سرور</strong>
+          <span>لوحة الإدارة</span>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-page="dashboard">🏠 الرئيسية</button>
+        <button class="nav-item" data-page="students">👨‍🎓 الطلاب</button>
+        <button class="nav-item" data-page="groups">👥 المجموعات</button>
+        <button class="nav-item" data-page="attendance">📝 الحضور والغياب</button>
+        <button class="nav-item" data-page="solutions">🎯 حصص الحل</button>
+        <button class="nav-item" data-page="payments">💰 المدفوعات</button>
+        <button class="nav-item" data-page="exams">📊 الاختبارات والدرجات</button>
+        <button class="nav-item" data-page="reports">📈 التقارير</button>
+        <button class="nav-item" data-page="settings">⚙️ الإعدادات</button>
+      </nav>
+      <button id="logoutBtn" class="logout">🚪 تسجيل الخروج</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuBtn" class="icon-btn">☰</button>
+        <div>
+          <strong id="pageTitle">الرئيسية</strong>
+          <span id="todayLabel"></span>
+        </div>
+        <div class="user-chip">
+          <span class="avatar">ي</span>
+          <span id="userName">المستخدم</span>
+        </div>
+      </header>
+      <div id="pageContent" class="content"></div>
+    </main>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
